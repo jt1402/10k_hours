@@ -7,6 +7,7 @@ import 'package:ten_k_hours/features/pursuits/data/pursuit_providers.dart';
 import 'package:ten_k_hours/features/pursuits/domain/pursuit.dart';
 import 'package:ten_k_hours/features/sessions/data/session_providers.dart';
 import 'package:ten_k_hours/features/sessions/domain/active_session.dart';
+import 'package:ten_k_hours/features/sessions/domain/streaks.dart';
 import 'package:ten_k_hours/features/sessions/presentation/ring/ring_widget.dart';
 
 class TimerScreen extends ConsumerStatefulWidget {
@@ -93,6 +94,7 @@ class _TimerScreenState extends ConsumerState<TimerScreen> {
     final totalAsync = ref.watch(
       totalCountedDurationProvider(widget.pursuitId),
     );
+    final streaksAsync = ref.watch(pursuitStreaksProvider(widget.pursuitId));
 
     final active = activeAsync.value;
     final isThisPursuit = active?.pursuitId == widget.pursuitId;
@@ -119,6 +121,7 @@ class _TimerScreenState extends ConsumerState<TimerScreen> {
               displayElapsed: displayElapsed,
               currentSessionElapsed: currentElapsed,
               active: activeForThis,
+              streaks: streaksAsync.value ?? Streaks.empty,
               onTap: () => _onTap(activeForThis),
               onLongPress: () => _onLongPress(activeForThis),
             );
@@ -135,6 +138,7 @@ class _Body extends StatelessWidget {
     required this.displayElapsed,
     required this.currentSessionElapsed,
     required this.active,
+    required this.streaks,
     required this.onTap,
     required this.onLongPress,
   });
@@ -143,6 +147,7 @@ class _Body extends StatelessWidget {
   final Duration displayElapsed;
   final Duration currentSessionElapsed;
   final ActiveSession? active;
+  final Streaks streaks;
   final VoidCallback onTap;
   final VoidCallback onLongPress;
 
@@ -194,6 +199,10 @@ class _Body extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           child: Column(
             children: [
+              if (streaks.currentDays > 0 || streaks.longestDays > 0)
+                _StreakStrip(streaks: streaks),
+              if (streaks.currentDays > 0 || streaks.longestDays > 0)
+                const SizedBox(height: 12),
               if (active != null)
                 Text(
                   _formatHms(currentSessionElapsed),
@@ -215,6 +224,43 @@ class _Body extends StatelessWidget {
             ],
           ),
         ),
+      ],
+    );
+  }
+}
+
+class _StreakStrip extends StatelessWidget {
+  const _StreakStrip({required this.streaks});
+  final Streaks streaks;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          Icons.local_fire_department_rounded,
+          size: 18,
+          color: streaks.currentDays > 0 ? scheme.primary : scheme.outline,
+        ),
+        const SizedBox(width: 6),
+        Text(
+          '${streaks.currentDays} day streak',
+          style: theme.textTheme.bodyMedium?.copyWith(
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        if (streaks.longestDays > streaks.currentDays) ...[
+          const SizedBox(width: 8),
+          Text(
+            '· longest ${streaks.longestDays}',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: scheme.onSurfaceVariant,
+            ),
+          ),
+        ],
       ],
     );
   }

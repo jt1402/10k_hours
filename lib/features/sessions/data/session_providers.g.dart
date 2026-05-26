@@ -206,3 +206,72 @@ final class TotalCountedDurationFamily extends $Family
   @override
   String toString() => r'totalCountedDurationProvider';
 }
+
+@ProviderFor(pursuitStreaks)
+final pursuitStreaksProvider = PursuitStreaksFamily._();
+
+final class PursuitStreaksProvider
+    extends $FunctionalProvider<AsyncValue<Streaks>, Streaks, Stream<Streaks>>
+    with $FutureModifier<Streaks>, $StreamProvider<Streaks> {
+  PursuitStreaksProvider._({
+    required PursuitStreaksFamily super.from,
+    required int super.argument,
+  }) : super(
+         retry: null,
+         name: r'pursuitStreaksProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$pursuitStreaksHash();
+
+  @override
+  String toString() {
+    return r'pursuitStreaksProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $StreamProviderElement<Streaks> $createElement($ProviderPointer pointer) =>
+      $StreamProviderElement(pointer);
+
+  @override
+  Stream<Streaks> create(Ref ref) {
+    final argument = this.argument as int;
+    return pursuitStreaks(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is PursuitStreaksProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$pursuitStreaksHash() => r'f704e37701eb129f5741bc5a8685e8d6a31dcfee';
+
+final class PursuitStreaksFamily extends $Family
+    with $FunctionalFamilyOverride<Stream<Streaks>, int> {
+  PursuitStreaksFamily._()
+    : super(
+        retry: null,
+        name: r'pursuitStreaksProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  PursuitStreaksProvider call(int pursuitId) =>
+      PursuitStreaksProvider._(argument: pursuitId, from: this);
+
+  @override
+  String toString() => r'pursuitStreaksProvider';
+}

@@ -40,7 +40,9 @@ void main() {
   test('watchAll emits updates as pursuits are added', () async {
     final stream = repo.watchAll();
     final emissions = <List<int>>[];
-    final sub = stream.listen((p) => emissions.add(p.map((e) => e.id).toList()));
+    final sub = stream.listen(
+      (p) => emissions.add(p.map((e) => e.id).toList()),
+    );
 
     await Future<void>.delayed(Duration.zero);
     await repo.create(name: 'A', accentColor: 0);

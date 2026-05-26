@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:ten_k_hours/features/pursuits/data/pursuit_providers.dart';
 import 'package:ten_k_hours/features/pursuits/domain/pursuit.dart';
 import 'package:ten_k_hours/features/pursuits/presentation/pursuit_switcher_sheet.dart';
@@ -300,18 +302,32 @@ class _Body extends StatelessWidget {
       children: [
         Expanded(
           child: Center(
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: onTap,
-              onLongPress: onLongPress,
-              child: Semantics(
-                button: true,
-                child: RingWidget(
-                  elapsed: displayElapsed,
-                  targetHours: pursuit.targetHours,
-                  accent: accent,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: onTap,
+                  onLongPress: onLongPress,
+                  child: Semantics(
+                    button: true,
+                    child: RingWidget(
+                      elapsed: displayElapsed,
+                      targetHours: pursuit.targetHours,
+                      accent: accent,
+                      size: 340,
+                    ),
+                  ),
                 ),
-              ),
+                const SizedBox(height: 36),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: _StatsRow(
+                    covered: displayElapsed,
+                    targetHours: pursuit.targetHours,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -326,8 +342,7 @@ class _Body extends StatelessWidget {
               if (active != null)
                 Text(
                   _formatHms(currentSessionElapsed),
-                  style: TextStyle(
-                    fontFamily: 'Inter',
+                  style: GoogleFonts.geist(
                     fontWeight: FontWeight.w500,
                     fontSize: 20,
                     color: theme.colorScheme.onSurface,
@@ -381,6 +396,100 @@ class _StreakStrip extends StatelessWidget {
             ),
           ),
         ],
+      ],
+    );
+  }
+}
+
+class _StatsRow extends StatelessWidget {
+  const _StatsRow({required this.covered, required this.targetHours});
+
+  final Duration covered;
+  final int targetHours;
+
+  Duration get _remaining {
+    final r = Duration(hours: targetHours) - covered;
+    return r.isNegative ? Duration.zero : r;
+  }
+
+  String _formatHms(Duration d) {
+    final h = d.inHours;
+    final m = d.inMinutes % 60;
+    final s = d.inSeconds % 60;
+    final hs = h >= 1000 ? NumberFormat('#,##0').format(h) : h.toString();
+    return '$hs:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return Row(
+      children: [
+        Expanded(
+          child: _StatCell(
+            label: 'Covered',
+            value: _formatHms(covered),
+            scheme: scheme,
+            alignment: CrossAxisAlignment.start,
+          ),
+        ),
+        Container(
+          width: 1,
+          height: 32,
+          color: scheme.outlineVariant,
+        ),
+        Expanded(
+          child: _StatCell(
+            label: 'Remaining',
+            value: _formatHms(_remaining),
+            scheme: scheme,
+            alignment: CrossAxisAlignment.end,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _StatCell extends StatelessWidget {
+  const _StatCell({
+    required this.label,
+    required this.value,
+    required this.scheme,
+    required this.alignment,
+  });
+
+  final String label;
+  final String value;
+  final ColorScheme scheme;
+  final CrossAxisAlignment alignment;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: alignment,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          label.toUpperCase(),
+          style: GoogleFonts.geist(
+            fontWeight: FontWeight.w500,
+            fontSize: 13,
+            letterSpacing: 0.8,
+            color: scheme.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: GoogleFonts.geist(
+            fontWeight: FontWeight.w600,
+            fontSize: 22,
+            color: scheme.onSurface,
+            fontFeatures: const [FontFeature.tabularFigures()],
+          ),
+        ),
       ],
     );
   }

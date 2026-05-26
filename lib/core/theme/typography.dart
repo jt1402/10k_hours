@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-const _fontFamily = 'Inter';
+import 'package:google_fonts/google_fonts.dart';
 
 TextTheme interTextTheme(ColorScheme scheme) {
   final onSurface = scheme.onSurface;
@@ -32,8 +31,7 @@ TextStyle _style({
   required double size,
   required Color color,
 }) {
-  return TextStyle(
-    fontFamily: _fontFamily,
+  return GoogleFonts.geist(
     fontWeight: weight,
     fontSize: size,
     color: color,
@@ -43,8 +41,7 @@ TextStyle _style({
 }
 
 TextStyle ringNumberStyle(ColorScheme scheme, {double size = 96}) {
-  return TextStyle(
-    fontFamily: _fontFamily,
+  return GoogleFonts.geist(
     fontWeight: FontWeight.w600,
     fontSize: size,
     color: scheme.onSurface,

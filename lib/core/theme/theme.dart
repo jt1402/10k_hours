@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:ten_k_hours/core/theme/colors.dart';
 import 'package:ten_k_hours/core/theme/typography.dart';
 
@@ -10,7 +11,7 @@ ThemeData buildTheme(ColorScheme scheme) {
     scaffoldBackgroundColor: scheme.surface,
     textTheme: textTheme,
     primaryTextTheme: textTheme,
-    fontFamily: 'Inter',
+    fontFamily: GoogleFonts.geist().fontFamily,
     appBarTheme: AppBarTheme(
       backgroundColor: scheme.surface,
       foregroundColor: scheme.onSurface,

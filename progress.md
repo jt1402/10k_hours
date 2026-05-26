@@ -12,17 +12,17 @@ countdown ring per pursuit. Local-first; no backend, accounts, or analytics.
 
 ## Status
 
-**Slice 1 shipped (2026-05-26)** — end-to-end working on iOS Simulator.
+**Slice 1 + Slice 2 shipped (2026-05-26)** — end-to-end on iOS Simulator with streaks live.
 
 | Metric                  | Value                                       |
 | ----------------------- | ------------------------------------------- |
-| Commits on `main`       | 12                                          |
-| Tests passing           | 36 (unit + golden + integration)            |
+| Commits on `main`       | 14                                          |
+| Tests passing           | 44 (unit + golden + integration)            |
 | `flutter analyze`       | clean                                       |
 | `dart format` check     | clean                                       |
-| iOS simulator           | runs end-to-end (create → run → pause → stop → restart resume) |
+| iOS simulator           | runs end-to-end (create → run → pause → stop → restart resume → streak strip) |
 | Android                 | deferred (SDK not yet installed)            |
-| CI                      | GitHub Actions on macos-latest              |
+| CI                      | GitHub Actions on macos-latest, green on every push |
 
 ---
 
@@ -183,25 +183,85 @@ forever-true.
 
 ---
 
+---
+
+## Slice 2 — Streaks & consistency (per-pursuit)
+
+### Commit timeline
+
+| # | Hash       | Subject                                                                          |
+| - | ---------- | -------------------------------------------------------------------------------- |
+| 13| `c072922`  | (slice-1 closeout) test+ci: container-level lifecycle test, github actions       |
+| 14| `52a5c5c`  | docs: progress.md tracking slice 1 ship + decisions + what's next                |
+| 15| `28c6f88`  | feat(streaks): per-pursuit daily streak with longest-ever in timer screen        |
+
+### Decisions made during Slice 2
+
+- **Per-pursuit, not aggregate.** Each pursuit owns its own rhythm; showing up
+  for guitar ≠ showing up for physics. Aggregate streak across many pursuits
+  was rejected because a single busy day with one quick session masks neglect
+  of everything else. If "aggregate" is wanted later, it's a small addition.
+- **Current streak anchors on today *or* yesterday.** The streak stays "alive"
+  if the last counted session was yesterday — gives the user the full day to
+  keep going. If neither today nor yesterday has a session, current = 0 but
+  `longestDays` is preserved as a personal best.
+- **Local-date bucketing.** Sessions store `startedAt` UTC; the StreakService
+  projects to the device's local calendar date using `nowLocal.timeZoneOffset`.
+  Multiple sessions on the same day count as one day.
+- **Reuses `watchForStats`.** Sub-60s sessions are already excluded, so they
+  don't accidentally extend a streak. No new repo method.
+- **No emoji in UI** (per spec): used `Icons.local_fire_department_rounded`
+  as a vector flame in the accent color (gray when current = 0).
+
+### What landed
+
+- `lib/features/sessions/domain/streaks.dart` — freezed `Streaks { currentDays,
+  longestDays }` with a `Streaks.empty` constant.
+- `lib/features/sessions/domain/streak_service.dart` — pure-Dart, stateless
+  `StreakService.compute({countedSessions, nowLocal}) → Streaks`.
+- `pursuitStreaksProvider(int pursuitId)` — `Stream<Streaks>` layered on top of
+  `sessionRepository.watchForStats(pursuitId)`. Re-yields on every session
+  change.
+- `_StreakStrip` widget in `timer_screen.dart`: small horizontal row under the
+  ring, hidden until there's any history. Shows flame icon + "N day streak",
+  appends "· longest M" only when M > current.
+
+### Test coverage added (44 total, +8)
+
+`test/features/sessions/domain/streak_service_test.dart`:
+
+- empty history → 0/0
+- single session today → 1/1
+- today + yesterday → 2/2
+- yesterday-anchored streak still alive (3-day run ending yesterday → 3/3)
+- no session today or yesterday → 0/3
+- gap inside history breaks the run (today+yesterday counted, older 3-day run
+  is the longest → 2/3)
+- multiple sessions on same day still count as one day
+- Korean timezone (+9) — late local session correctly buckets to "today"
+
+---
+
 ## What's next
 
-Possible Slice 2 directions, in priority order from the BUILD_PROMPT:
+Possible Slice 3 directions, in priority order from the BUILD_PROMPT:
 
-1. **Streaks & consistency** — daily/weekly streak counter, "you've shown up
-   N days in a row" beneath the ring. Adds a small DAO query and a strip in the
-   timer screen.
-2. **Slice 1.5 polish** before Slice 2 — color picker for pursuits, multi-pursuit
-   horizontal pager (data is already multi-pursuit), proper iOS/Android flavor
-   configs (different bundle IDs, app names, icons), Android SDK setup.
-3. **Pace projection** — "at your 7-day pace you finish on `<date>`," compared
-   against optional `goal_date`. Adds a column (migration v2) and a math module.
-4. **Heatmap** — GitHub-style contribution calendar of daily hours.
-5. **Session quality tagging** — optional 1–5 mood/focus rating after each stop,
+1. **Pace projection** — "at your 7-day pace you finish on `<date>`," compared
+   against optional `goal_date`. Adds a column (migration v2) and a math
+   module that consumes `watchForStats`. Re-uses the local-date bucketing
+   built for streaks.
+2. **Heatmap** — GitHub-style contribution calendar of daily hours. Reuses the
+   same daily-totals query the streak math already needs; a new screen plus a
+   `CustomPainter` for the grid.
+3. **Slice 1.5 polish** — color picker for pursuits, multi-pursuit horizontal
+   pager (data is already multi-pursuit), proper iOS/Android flavor configs
+   (different bundle IDs, app names, icons), Android SDK setup.
+4. **Session quality tagging** — optional 1–5 mood/focus rating after each stop,
    driving "your best sessions tend to be `<morning / 25–50min / …>`".
-6. **Smart reminders** — local notifications scheduled at the user's
+5. **Smart reminders** — local notifications scheduled at the user's
    historically most-productive hour. Quiet hours respected. Needs real-device
    verification.
-7. **Insights screen** — weekly rollup, % change vs. prior week, longest
+6. **Insights screen** — weekly rollup, % change vs. prior week, longest
    session, projected-completion shift.
-8. **Export** — CSV/JSON of all sessions; "the user owns their data."
-9. **iCloud / Google Drive backup** — opt-in, later.
+7. **Export** — CSV/JSON of all sessions; "the user owns their data."
+8. **iCloud / Google Drive backup** — opt-in, later.

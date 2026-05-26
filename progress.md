@@ -12,15 +12,15 @@ countdown ring per pursuit. Local-first; no backend, accounts, or analytics.
 
 ## Status
 
-**Slice 1 + Slice 2 shipped (2026-05-26)** — end-to-end on iOS Simulator with streaks live.
+**Slices 1–3 shipped (2026-05-26)** — multi-pursuit timer with streaks and a GitHub-style heatmap.
 
 | Metric                  | Value                                       |
 | ----------------------- | ------------------------------------------- |
-| Commits on `main`       | 14                                          |
+| Commits on `main`       | 16                                          |
 | Tests passing           | 44 (unit + golden + integration)            |
 | `flutter analyze`       | clean                                       |
 | `dart format` check     | clean                                       |
-| iOS simulator           | runs end-to-end (create → run → pause → stop → restart resume → streak strip) |
+| iOS simulator           | runs end-to-end (timer + switcher + heatmap) |
 | Android                 | deferred (SDK not yet installed)            |
 | CI                      | GitHub Actions on macos-latest, green on every push |
 
@@ -242,9 +242,83 @@ forever-true.
 
 ---
 
+---
+
+## Slice 3 — Multi-pursuit switcher + GitHub-style heatmap
+
+### Commit timeline
+
+| # | Hash       | Subject                                                                          |
+| - | ---------- | -------------------------------------------------------------------------------- |
+| 16| `2ca1166`  | feat(slice3): multi-pursuit switcher and github-style heatmap                    |
+
+### What landed (3a — multi-pursuit switcher)
+
+- **Top app bar on the timer screen** replaces the inline pursuit-name headline.
+  Centered title is a tappable pill (`_TitleButton` with chevron) that opens the
+  switcher sheet; trailing action is a calendar icon that routes to the heatmap.
+- **`showPursuitSwitcher` modal bottom sheet** (`pursuit_switcher_sheet.dart`):
+  lists every pursuit (accent dot, name, target-hour subtitle, check on current),
+  "+ New pursuit" tile at the bottom. Picking a pursuit calls
+  `context.replace('/pursuit/:newId')` so back-stack stays clean.
+- **Active-session safety**: if a session is running, the sheet shows a tinted
+  banner *"Stop the current session before switching."* and all non-current
+  rows are visually disabled (`enabled: false` on ListTile). The data layer's
+  `active_session` singleton already enforces only-one-timer, so this is purely
+  UX clarity.
+
+### What landed (3b — heatmap)
+
+- **`SessionRepository.watchDailyTotals(pursuitId)`** new repo method. Drift
+  impl uses a `customSelect` with
+  `date(started_at, 'unixepoch', 'localtime')` to bucket by the device's
+  local calendar date in SQL — fast and reactive (the stream re-fires on every
+  sessions-table change). Fake impl mirrors the semantics for SessionService
+  tests.
+- **`HeatmapPainter`** (`CustomPainter`) — 53-week × 7-day grid, 12 px cells
+  with 3 px gaps, Monday-aligned rows, 5 intensity buckets coloring with the
+  pursuit's accent at α=0.25/0.5/0.75/1.0 over a muted backdrop. Empty/future
+  cells are skipped.
+- **`HeatmapScreen`** at `/pursuit/:id/heatmap` — horizontal scroll with the
+  grid (reversed so the most recent week sits at the right edge), a legend
+  ("Less ☐☐☐☐☐ More"), and a footer of three stats: total hours logged,
+  days active, longest consecutive run. Tap any cell → modal bottom sheet
+  showing the day's date and total.
+
+### Decisions made during Slice 3
+
+- **Switcher = bottom sheet, not a horizontal pager.** Pager + giant tap target
+  for start/pause/stop creates an ambiguous gesture surface. Bottom sheet is
+  unambiguous and matches modern iOS patterns (Photos library, Notion).
+- **Blocked switching mid-session** rather than auto-stopping. Auto-stop would
+  silently terminate work the user might still want to come back to. Explicit
+  is safer.
+- **Heatmap on a separate screen** (not inline under the ring). Keeps the
+  timer surface focused. Calendar icon in the app bar is the entry point.
+- **53 weeks**, Monday-aligned, with the current week on the right. Reusing
+  GitHub's convention even though Material 3 generally prefers Sunday-aligned —
+  Monday-aligned reads cleaner for a productivity app and matches the user's
+  weekly rhythm.
+- **Bucketing in SQL, not Dart.** `date(...,'unixepoch','localtime')` is a one-
+  liner that runs server-side (relative to Drift's isolate) and emits already-
+  bucketed rows. No need to walk 365 sessions in app code.
+- **Day detail = minimal.** Slice 3 just shows date + total. Per-day session
+  list is a Slice 4+ polish item.
+
+### Known follow-ups
+
+- **No dedicated `watchDailyTotals` Drift test.** The fake impl is exercised by
+  the heatmap screen during manual verification and the streak math already
+  covers per-day bucketing via a different path. Add an in-memory Drift test
+  for the raw SQL query when polishing.
+- **Day-detail bottom sheet** doesn't yet list the day's individual sessions —
+  just date + total. Add when expanding the heatmap surface.
+
+---
+
 ## What's next
 
-Possible Slice 3 directions, in priority order from the BUILD_PROMPT:
+Possible Slice 4 directions, in priority order from the BUILD_PROMPT:
 
 1. **Pace projection** — "at your 7-day pace you finish on `<date>`," compared
    against optional `goal_date`. Adds a column (migration v2) and a math

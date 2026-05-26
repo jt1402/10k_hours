@@ -12,15 +12,16 @@ countdown ring per pursuit. Local-first; no backend, accounts, or analytics.
 
 ## Status
 
-**Slices 1–3 shipped (2026-05-26)** — multi-pursuit timer with streaks and a GitHub-style heatmap.
+**Slices 1–4 shipped (2026-05-26)** — multi-pursuit timer, streaks, GitHub-style heatmap, iOS Live Activity (Dynamic Island + lock screen).
 
 | Metric                  | Value                                       |
 | ----------------------- | ------------------------------------------- |
-| Commits on `main`       | 16                                          |
+| Commits on `main`       | 19                                          |
 | Tests passing           | 44 (unit + golden + integration)            |
 | `flutter analyze`       | clean                                       |
 | `dart format` check     | clean                                       |
-| iOS simulator           | runs end-to-end (timer + switcher + heatmap) |
+| iOS deployment target   | 16.2 (required for ActivityKit / Dynamic Island) |
+| iOS simulator           | runs end-to-end (timer + switcher + heatmap + Live Activity) |
 | Android                 | deferred (SDK not yet installed)            |
 | CI                      | GitHub Actions on macos-latest, green on every push |
 
@@ -316,9 +317,69 @@ forever-true.
 
 ---
 
+---
+
+## Slice 4 — iOS Live Activity (Dynamic Island + Lock Screen)
+
+### Commit timeline
+
+| # | Hash       | Subject                                                                          |
+| - | ---------- | -------------------------------------------------------------------------------- |
+| 17| `5293943`  | chore(ios): bump deployment target to 16.2 for Live Activities support           |
+| 18| `f179056`  | feat(ios): live activity swift files and method channel wiring                   |
+| 19| `c6aab22`  | feat(live-activity): dart bridge, xcode target setup script, timer screen hooks  |
+
+### What landed
+
+- **iOS deployment target bumped to 16.2** in `ios/Podfile` and all configs in `ios/Runner.xcodeproj/project.pbxproj`. Same minimum applied to the new Widget Extension target.
+- **`NSSupportsLiveActivities = YES`** added to `ios/Runner/Info.plist`.
+- **New Xcode target `TenKHoursLiveActivity`** (bundle id `io.wincl.tenKHours.LiveActivity`, product type `app-extension`, deployment 16.2) added programmatically by `scripts/setup_live_activity_target.rb` using the `xcodeproj` Ruby gem. Idempotent — re-runs are no-ops.
+- **Widget Extension Swift** in `ios/TenKHoursLiveActivity/`:
+  - `TenKHoursLiveActivityAttributes.swift` — `ActivityAttributes` (`pursuitName`, `pursuitColorARGB`) + `ContentState` (`effectiveStartedAt`, `isPaused`, `pausedAtFreezeSeconds`). Compiled into BOTH the extension and the main Runner target so they speak the same schema.
+  - `TenKHoursLiveActivity.swift` — the `Widget` itself. SwiftUI views for lock screen, Dynamic Island compact (leading icon + trailing ticker), and Dynamic Island expanded (name + status + large ticker). Uses `Text(timerInterval:)` so the seconds tick locally with **zero pushed updates**.
+  - `TenKHoursLiveActivityBundle.swift` — `@main WidgetBundle` entry point.
+  - `Info.plist` — extension manifest, `NSExtensionPointIdentifier = com.apple.widgetkit-extension`.
+- **Main-app bridge**:
+  - `ios/Runner/LiveActivityController.swift` — wraps `Activity<…>` lifecycle: `start / update / end`. Singleton-shared.
+  - `ios/Runner/AppDelegate.swift` — registers `FlutterMethodChannel("ten_k_hours/live_activity")` on `didInitializeImplicitFlutterEngine` and dispatches.
+- **Dart bridge**:
+  - `lib/features/sessions/data/live_activity_service.dart` — thin `MethodChannel` wrapper. No-op on non-iOS or on channel errors (Live Activity is non-critical UX, never crashes the app).
+  - `liveActivityServiceProvider` wired in `session_providers.dart`.
+  - `_TimerScreenState._onTap / _onLongPress` now orchestrate both `SessionService` and `LiveActivityService` calls:
+    - Start → `live.start(pursuitName, color, effectiveStartedAt: startedAt)`
+    - Pause → `live.update(isPaused: true, pausedAtFreezeSeconds: elapsedSecs)`
+    - Resume → `live.update(isPaused: false, effectiveStartedAt: now - currentElapsed)`
+    - Stop → `live.end()`
+
+### Decisions made during Slice 4
+
+- **Custom MethodChannel, no plugin.** Avoids a third-party plugin dependency for ~200 lines of glue code. Full control over the data model.
+- **Local-tick math via `Text(timerInterval:)`.** iOS SwiftUI ticks the seconds itself given an "effective start" Date. We only push updates on pause / resume / stop — events that always happen while the user is in the app. **No APNs / push token / server required.** Stays local-first.
+- **Tap-to-open, no in-Activity buttons.** Pause/stop buttons embedded in the Dynamic Island would need iOS 17+ App Intents + another Swift target. Deferred to Slice 4.1.
+- **Orchestration at the UI layer**, not in `SessionService`. Keeps `SessionService` pure Dart, no Flutter MethodChannel dependency.
+- **Programmatic Xcode target via `xcodeproj` gem** instead of asking the user to open Xcode. Script committed at `scripts/setup_live_activity_target.rb` so future re-clones can re-run it.
+- **Single bundle ID for now**: app is `io.wincl.tenKHours`, extension is `io.wincl.tenKHours.LiveActivity`. Flavors (dev/prod split) still deferred to Slice 1.5.
+
+### Known caveats / follow-ups
+
+- **No cold-start Live Activity bootstrap.** If you cold-start the app while a session is persisted as active, the Live Activity doesn't auto-appear — you have to stop and restart the session (or pause + resume) to trigger it. Bootstrap is a small Slice 4.1 add: listen to `activeSessionProvider`, call `live.start()` when a restored session is first observed.
+- **Apple-side authorization.** First time the user runs a session, iOS may prompt for "Allow Live Activities for 10k Hours" in Settings. We don't currently nudge the user toward that setting if they decline.
+- **No automated test of the iOS bridge.** The Dart side is covered by it-just-no-ops-on-non-iOS behavior in test runs; the Swift side is covered only by manual simulator verification.
+- **Real device verification pending.** Sim works for layout and basic behavior; real hardware can surface 8-hour expiry, system reclaim, and battery-savings edge cases.
+
+### How to verify on the booted simulator
+
+1. Long-press the ring on the timer screen to stop any currently-running session.
+2. Tap the ring to start a fresh session.
+3. Press `Cmd-Shift-H` (or `xcrun simctl io booted home`) to background the app → Dynamic Island compact view ticks at top of screen.
+4. `Cmd-L` (or `xcrun simctl io booted lock`) → lock-screen Live Activity ticks under the time.
+5. Tap pause from inside the app → Activity freezes. Resume → continues. Long-press to stop → Activity dismisses.
+
+---
+
 ## What's next
 
-Possible Slice 4 directions, in priority order from the BUILD_PROMPT:
+Possible Slice 5 directions, in priority order from the BUILD_PROMPT:
 
 1. **Pace projection** — "at your 7-day pace you finish on `<date>`," compared
    against optional `goal_date`. Adds a column (migration v2) and a math

@@ -21,3 +21,14 @@ SessionService sessionService(Ref ref) {
 Stream<ActiveSession?> activeSession(Ref ref) {
   return ref.watch(sessionRepositoryProvider).watchActive();
 }
+
+@riverpod
+Stream<Duration> totalCountedDuration(Ref ref, int pursuitId) async* {
+  final repo = ref.watch(sessionRepositoryProvider);
+  await for (final sessions in repo.watchForStats(pursuitId)) {
+    yield sessions.fold<Duration>(
+      Duration.zero,
+      (acc, s) => acc + s.duration,
+    );
+  }
+}

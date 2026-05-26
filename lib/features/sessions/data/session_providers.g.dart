@@ -135,3 +135,74 @@ final class ActiveSessionProvider
 }
 
 String _$activeSessionHash() => r'44b5f6a2d24891f3ef5f73d6ad0e423e67c8e355';
+
+@ProviderFor(totalCountedDuration)
+final totalCountedDurationProvider = TotalCountedDurationFamily._();
+
+final class TotalCountedDurationProvider
+    extends
+        $FunctionalProvider<AsyncValue<Duration>, Duration, Stream<Duration>>
+    with $FutureModifier<Duration>, $StreamProvider<Duration> {
+  TotalCountedDurationProvider._({
+    required TotalCountedDurationFamily super.from,
+    required int super.argument,
+  }) : super(
+         retry: null,
+         name: r'totalCountedDurationProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$totalCountedDurationHash();
+
+  @override
+  String toString() {
+    return r'totalCountedDurationProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $StreamProviderElement<Duration> $createElement($ProviderPointer pointer) =>
+      $StreamProviderElement(pointer);
+
+  @override
+  Stream<Duration> create(Ref ref) {
+    final argument = this.argument as int;
+    return totalCountedDuration(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is TotalCountedDurationProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$totalCountedDurationHash() =>
+    r'e02a937a8484fd8cd490fc6368fb8fe450dfcecb';
+
+final class TotalCountedDurationFamily extends $Family
+    with $FunctionalFamilyOverride<Stream<Duration>, int> {
+  TotalCountedDurationFamily._()
+    : super(
+        retry: null,
+        name: r'totalCountedDurationProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  TotalCountedDurationProvider call(int pursuitId) =>
+      TotalCountedDurationProvider._(argument: pursuitId, from: this);
+
+  @override
+  String toString() => r'totalCountedDurationProvider';
+}

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ten_k_hours/features/pursuits/data/pursuit_providers.dart';
+import 'package:ten_k_hours/features/sessions/data/session_providers.dart';
 import 'package:ten_k_hours/features/sessions/presentation/timer_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -10,6 +11,7 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final pursuitsAsync = ref.watch(pursuitListProvider);
+    final activeAsync = ref.watch(activeSessionProvider);
     return pursuitsAsync.when(
       loading: () => const Scaffold(
         body: Center(child: CircularProgressIndicator()),
@@ -19,7 +21,9 @@ class HomeScreen extends ConsumerWidget {
       ),
       data: (list) {
         if (list.isEmpty) return const _EmptyState();
-        return TimerScreen(pursuitId: list.first.id);
+        final active = activeAsync.value;
+        final pursuitId = active?.pursuitId ?? list.first.id;
+        return TimerScreen(pursuitId: pursuitId);
       },
     );
   }

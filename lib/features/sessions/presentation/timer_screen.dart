@@ -46,25 +46,52 @@ class _TimerScreenState extends ConsumerState<TimerScreen> {
     return active.elapsedAt(DateTime.now().toUtc());
   }
 
-  Future<void> _onTap(ActiveSession? active) async {
+  Future<void> _onTap(ActiveSession? active, Pursuit pursuit) async {
     final service = ref.read(sessionServiceProvider);
+    final live = ref.read(liveActivityServiceProvider);
     if (active == null) {
-      await service.start(widget.pursuitId);
+      final started = await service.start(widget.pursuitId);
       unawaited(HapticFeedback.lightImpact());
+      unawaited(
+        live.start(
+          pursuitName: pursuit.name,
+          pursuitColorARGB: pursuit.accentColor,
+          effectiveStartedAt: started.startedAt,
+        ),
+      );
     } else if (active.isPaused) {
-      await service.resume();
+      final resumed = await service.resume();
       unawaited(HapticFeedback.lightImpact());
+      final now = DateTime.now().toUtc();
+      final elapsed = resumed.elapsedAt(now);
+      unawaited(
+        live.update(
+          effectiveStartedAt: now.subtract(elapsed),
+          isPaused: false,
+          pausedAtFreezeSeconds: 0,
+        ),
+      );
     } else {
-      await service.pause();
+      final paused = await service.pause();
       unawaited(HapticFeedback.lightImpact());
+      final elapsed = paused.elapsedAt(DateTime.now().toUtc());
+      unawaited(
+        live.update(
+          effectiveStartedAt: paused.startedAt,
+          isPaused: true,
+          pausedAtFreezeSeconds: elapsed.inSeconds,
+        ),
+      );
     }
   }
 
   Future<void> _onLongPress(ActiveSession? active) async {
     if (active == null) return;
     final service = ref.read(sessionServiceProvider);
+    final live = ref.read(liveActivityServiceProvider);
     final result = await service.stop();
     unawaited(HapticFeedback.mediumImpact());
+    unawaited(live.end());
     _lastWholeHoursElapsed = -1;
     if (!mounted) return;
     if (!result.countedTowardStats) {
@@ -149,7 +176,7 @@ class _TimerScreenState extends ConsumerState<TimerScreen> {
               currentSessionElapsed: currentElapsed,
               active: activeForThis,
               streaks: streaksAsync.value ?? Streaks.empty,
-              onTap: () => _onTap(activeForThis),
+              onTap: () => _onTap(activeForThis, pursuit),
               onLongPress: () => _onLongPress(activeForThis),
             );
           },

@@ -8,16 +8,23 @@
 
 /* Begin PBXBuildFile section */
 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
+		14E24E38893EB5E6B82006D5 /* TenKHoursLiveActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21845704EFE3E810C1133C19 /* TenKHoursLiveActivityAttributes.swift */; };
+		247E633BF1ABEC7C1D747478 /* LiveActivityController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C33258EF85A4E4A82A64B80E /* LiveActivityController.swift */; };
 		331C808B294A63AB00263BE5 /* RunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 331C807B294A618700263BE5 /* RunnerTests.swift */; };
 		3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */; };
+		6895C479E48C98F174D17F5D /* TenKHoursLiveActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE868B1B03B98FC868FBF4AF /* TenKHoursLiveActivity.swift */; };
 		74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74858FAE1ED2DC5600515810 /* AppDelegate.swift */; };
+		748B766453394E76E771A702 /* TenKHoursLiveActivityBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A4A5A460625B19BA8137B5B /* TenKHoursLiveActivityBundle.swift */; };
 		7884E8682EC3CC0700C636F2 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7884E8672EC3CC0400C636F2 /* SceneDelegate.swift */; };
 		78A318202AECB46A00862997 /* FlutterGeneratedPluginSwiftPackage in Frameworks */ = {isa = PBXBuildFile; productRef = 78A3181F2AECB46A00862997 /* FlutterGeneratedPluginSwiftPackage */; };
+		7BEABB8540C7E63D9DBE2C50 /* TenKHoursLiveActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21845704EFE3E810C1133C19 /* TenKHoursLiveActivityAttributes.swift */; };
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
+		ABECAE3B36F07457A93DC5EB /* TenKHoursLiveActivity.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 1757DA4F87518D27809E4297 /* TenKHoursLiveActivity.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		D35AEB123B2214CBCADC5842 /* Pods_Runner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A7E2227959BA23DA0401EB82 /* Pods_Runner.framework */; };
 		ED0A2D92B0FA960F0573C7BC /* Pods_RunnerTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F8CB470246780F7917D4444 /* Pods_RunnerTests.framework */; };
+		EFDEB82C05FAA5725769F647 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EE322571879158AA6C525BDA /* Foundation.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -27,6 +34,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 97C146ED1CF9000F007C117D;
 			remoteInfo = Runner;
+		};
+		E9B84209EE3F42AA3B26B453 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 97C146E61CF9000F007C117D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 6B21D0C319AF3954DEB0666A;
+			remoteInfo = TenKHoursLiveActivity;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -41,13 +55,28 @@
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C9A4142F55F34674A0459BEF /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				ABECAE3B36F07457A93DC5EB /* TenKHoursLiveActivity.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		08624260B18C894616EEC946 /* Pods-RunnerTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.debug.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.debug.xcconfig"; sourceTree = "<group>"; };
+		0923A271FE03811E73406AB0 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		0A4A5A460625B19BA8137B5B /* TenKHoursLiveActivityBundle.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TenKHoursLiveActivityBundle.swift; sourceTree = "<group>"; };
 		0F8CB470246780F7917D4444 /* Pods_RunnerTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RunnerTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1498D2321E8E86230040F4C2 /* GeneratedPluginRegistrant.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GeneratedPluginRegistrant.h; sourceTree = "<group>"; };
 		1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GeneratedPluginRegistrant.m; sourceTree = "<group>"; };
+		1757DA4F87518D27809E4297 /* TenKHoursLiveActivity.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TenKHoursLiveActivity.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		21845704EFE3E810C1133C19 /* TenKHoursLiveActivityAttributes.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TenKHoursLiveActivityAttributes.swift; sourceTree = "<group>"; };
 		2196E832D637E74724372C06 /* Pods-Runner.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.debug.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"; sourceTree = "<group>"; };
 		2DB10292B7FAA886F0EB4204 /* Pods-Runner.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.release.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"; sourceTree = "<group>"; };
 		331C807B294A618700263BE5 /* RunnerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunnerTests.swift; sourceTree = "<group>"; };
@@ -69,9 +98,20 @@
 		97C147021CF9000F007C117D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9C33FCAD2645A8A831A830C2 /* Pods-RunnerTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.release.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.release.xcconfig"; sourceTree = "<group>"; };
 		A7E2227959BA23DA0401EB82 /* Pods_Runner.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Runner.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		AE868B1B03B98FC868FBF4AF /* TenKHoursLiveActivity.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TenKHoursLiveActivity.swift; sourceTree = "<group>"; };
+		C33258EF85A4E4A82A64B80E /* LiveActivityController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveActivityController.swift; sourceTree = "<group>"; };
+		EE322571879158AA6C525BDA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		7B9400A0A777DED6F32ECC97 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EFDEB82C05FAA5725769F647 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		97C146EB1CF9000F007C117D /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -111,6 +151,7 @@
 			children = (
 				A7E2227959BA23DA0401EB82 /* Pods_Runner.framework */,
 				0F8CB470246780F7917D4444 /* Pods_RunnerTests.framework */,
+				F33B85816832A10CC7E0E82D /* iOS */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -121,6 +162,18 @@
 				331C807B294A618700263BE5 /* RunnerTests.swift */,
 			);
 			path = RunnerTests;
+			sourceTree = "<group>";
+		};
+		64052223546A1F0DF595A08E /* TenKHoursLiveActivity */ = {
+			isa = PBXGroup;
+			children = (
+				21845704EFE3E810C1133C19 /* TenKHoursLiveActivityAttributes.swift */,
+				AE868B1B03B98FC868FBF4AF /* TenKHoursLiveActivity.swift */,
+				0A4A5A460625B19BA8137B5B /* TenKHoursLiveActivityBundle.swift */,
+				0923A271FE03811E73406AB0 /* Info.plist */,
+			);
+			name = TenKHoursLiveActivity;
+			path = TenKHoursLiveActivity;
 			sourceTree = "<group>";
 		};
 		9740EEB11CF90186004384FC /* Flutter */ = {
@@ -144,6 +197,7 @@
 				331C8082294A63A400263BE5 /* RunnerTests */,
 				0EC6C08F72C06081519DBB9B /* Pods */,
 				2EE077C93A8118BBDF3DF097 /* Frameworks */,
+				64052223546A1F0DF595A08E /* TenKHoursLiveActivity */,
 			);
 			sourceTree = "<group>";
 		};
@@ -152,6 +206,7 @@
 			children = (
 				97C146EE1CF9000F007C117D /* Runner.app */,
 				331C8081294A63A400263BE5 /* RunnerTests.xctest */,
+				1757DA4F87518D27809E4297 /* TenKHoursLiveActivity.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -168,8 +223,17 @@
 				74858FAE1ED2DC5600515810 /* AppDelegate.swift */,
 				7884E8672EC3CC0400C636F2 /* SceneDelegate.swift */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
+				C33258EF85A4E4A82A64B80E /* LiveActivityController.swift */,
 			);
 			path = Runner;
+			sourceTree = "<group>";
+		};
+		F33B85816832A10CC7E0E82D /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				EE322571879158AA6C525BDA /* Foundation.framework */,
+			);
+			name = iOS;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -194,6 +258,23 @@
 			productReference = 331C8081294A63A400263BE5 /* RunnerTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		6B21D0C319AF3954DEB0666A /* TenKHoursLiveActivity */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 302D5B7259CBE78277BC3EEF /* Build configuration list for PBXNativeTarget "TenKHoursLiveActivity" */;
+			buildPhases = (
+				446864EE0EC2F14C40004CDE /* Sources */,
+				7B9400A0A777DED6F32ECC97 /* Frameworks */,
+				C173471B80825F2EC11DFA71 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = TenKHoursLiveActivity;
+			productName = TenKHoursLiveActivity;
+			productReference = 1757DA4F87518D27809E4297 /* TenKHoursLiveActivity.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		97C146ED1CF9000F007C117D /* Runner */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 97C147051CF9000F007C117D /* Build configuration list for PBXNativeTarget "Runner" */;
@@ -206,10 +287,12 @@
 				9705A1C41CF9048500538489 /* Embed Frameworks */,
 				3B06AD1E1E4923F5004D2608 /* Thin Binary */,
 				4075762FDDA4D0032CF2ACE8 /* [CP] Copy Pods Resources */,
+				C9A4142F55F34674A0459BEF /* Embed App Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				4F67C0DDD6B64CB7B8EB8821 /* PBXTargetDependency */,
 			);
 			name = Runner;
 			packageProductDependencies = (
@@ -257,6 +340,7 @@
 			targets = (
 				97C146ED1CF9000F007C117D /* Runner */,
 				331C8080294A63A400263BE5 /* RunnerTests */,
+				6B21D0C319AF3954DEB0666A /* TenKHoursLiveActivity */,
 			);
 		};
 /* End PBXProject section */
@@ -277,6 +361,13 @@
 				3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */,
 				97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */,
 				97C146FC1CF9000F007C117D /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C173471B80825F2EC11DFA71 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -386,6 +477,16 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		446864EE0EC2F14C40004CDE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				14E24E38893EB5E6B82006D5 /* TenKHoursLiveActivityAttributes.swift in Sources */,
+				6895C479E48C98F174D17F5D /* TenKHoursLiveActivity.swift in Sources */,
+				748B766453394E76E771A702 /* TenKHoursLiveActivityBundle.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		97C146EA1CF9000F007C117D /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -393,6 +494,8 @@
 				74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
 				7884E8682EC3CC0700C636F2 /* SceneDelegate.swift in Sources */,
+				7BEABB8540C7E63D9DBE2C50 /* TenKHoursLiveActivityAttributes.swift in Sources */,
+				247E633BF1ABEC7C1D747478 /* LiveActivityController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -403,6 +506,12 @@
 			isa = PBXTargetDependency;
 			target = 97C146ED1CF9000F007C117D /* Runner */;
 			targetProxy = 331C8085294A63A400263BE5 /* PBXContainerItemProxy */;
+		};
+		4F67C0DDD6B64CB7B8EB8821 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = TenKHoursLiveActivity;
+			target = 6B21D0C319AF3954DEB0666A /* TenKHoursLiveActivity */;
+			targetProxy = E9B84209EE3F42AA3B26B453 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -706,9 +815,102 @@
 			};
 			name = Release;
 		};
+		AA51EBFDAE90731B1FBD38C1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = TenKHoursLiveActivity/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.wincl.tenKHours.LiveActivity;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		CD085F20E076F45FB7208C50 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = TenKHoursLiveActivity/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.wincl.tenKHours.LiveActivity;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		EE3234C5C26F9A80F16EB4BA /* Profile */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = TenKHoursLiveActivity/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.wincl.tenKHours.LiveActivity;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Profile;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		302D5B7259CBE78277BC3EEF /* Build configuration list for PBXNativeTarget "TenKHoursLiveActivity" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA51EBFDAE90731B1FBD38C1 /* Release */,
+				CD085F20E076F45FB7208C50 /* Debug */,
+				EE3234C5C26F9A80F16EB4BA /* Profile */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		331C8087294A63A400263BE5 /* Build configuration list for PBXNativeTarget "RunnerTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

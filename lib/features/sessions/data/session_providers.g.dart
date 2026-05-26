@@ -97,6 +97,54 @@ final class SessionServiceProvider
 
 String _$sessionServiceHash() => r'6a6e5e3b5dd6f308fa6f8b994d0087d10e0e7b04';
 
+@ProviderFor(liveActivityService)
+final liveActivityServiceProvider = LiveActivityServiceProvider._();
+
+final class LiveActivityServiceProvider
+    extends
+        $FunctionalProvider<
+          LiveActivityService,
+          LiveActivityService,
+          LiveActivityService
+        >
+    with $Provider<LiveActivityService> {
+  LiveActivityServiceProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'liveActivityServiceProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$liveActivityServiceHash();
+
+  @$internal
+  @override
+  $ProviderElement<LiveActivityService> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  LiveActivityService create(Ref ref) {
+    return liveActivityService(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(LiveActivityService value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<LiveActivityService>(value),
+    );
+  }
+}
+
+String _$liveActivityServiceHash() =>
+    r'6907d502500bc442cfa45da130b61a40b42b42b9';
+
 @ProviderFor(activeSession)
 final activeSessionProvider = ActiveSessionProvider._();
 

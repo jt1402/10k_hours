@@ -1,5 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:ten_k_hours/core/db/database_provider.dart';
+import 'package:ten_k_hours/features/sessions/data/live_activity_service.dart';
 import 'package:ten_k_hours/features/sessions/data/session_repository_impl.dart';
 import 'package:ten_k_hours/features/sessions/domain/active_session.dart';
 import 'package:ten_k_hours/features/sessions/domain/session_repository.dart';
@@ -17,6 +18,11 @@ SessionRepository sessionRepository(Ref ref) {
 @Riverpod(keepAlive: true)
 SessionService sessionService(Ref ref) {
   return SessionService(repo: ref.watch(sessionRepositoryProvider));
+}
+
+@Riverpod(keepAlive: true)
+LiveActivityService liveActivityService(Ref ref) {
+  return const LiveActivityService();
 }
 
 @riverpod

@@ -13,7 +13,7 @@ class DriftPursuitRepository implements PursuitRepository {
   Future<Pursuit> create({
     required String name,
     required int accentColor,
-    int targetHours = kDefaultTargetHours,
+    int targetMinutes = kDefaultTargetMinutes,
   }) async {
     final row = await _db
         .into(_db.pursuits)
@@ -21,7 +21,7 @@ class DriftPursuitRepository implements PursuitRepository {
           PursuitsCompanion.insert(
             name: name,
             accentColor: accentColor,
-            targetHours: Value(targetHours),
+            targetMinutes: Value(targetMinutes),
             createdAt: DateTime.now().toUtc(),
           ),
         );
@@ -43,11 +43,18 @@ class DriftPursuitRepository implements PursuitRepository {
     return query.watch().map((rows) => rows.map(_toDomain).toList());
   }
 
+  @override
+  Future<void> delete(int id) async {
+    await (_db.delete(
+      _db.pursuits,
+    )..where((t) => t.id.equals(id))).go();
+  }
+
   Pursuit _toDomain(PursuitRow row) => Pursuit(
     id: row.id,
     name: row.name,
     accentColor: row.accentColor,
-    targetHours: row.targetHours,
+    targetMinutes: row.targetMinutes,
     createdAt: row.createdAt.toUtc(),
   );
 }

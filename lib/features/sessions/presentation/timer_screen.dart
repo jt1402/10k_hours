@@ -26,16 +26,62 @@ class _TimerScreenState extends ConsumerState<TimerScreen> {
   Timer? _ticker;
   int _lastWholeHoursElapsed = -1;
   bool _liveActivityBootstrapped = false;
+  String? _lastAdaptivePushed;
+  DateTime? _lastAdaptivePushAt;
 
   void _ensureTicker(bool needTicker) {
     if (needTicker && _ticker == null) {
       _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
-        if (mounted) setState(() {});
+        if (mounted) {
+          setState(() {});
+          _maybePushAdaptiveDisplay();
+        }
       });
     } else if (!needTicker && _ticker != null) {
       _ticker?.cancel();
       _ticker = null;
     }
+  }
+
+  // Push an adaptive display string to the Live Activity when elapsed crosses
+  // 1h (auto-tick can no longer represent H:MM or Nh). Spaced 30s apart to
+  // stay within ActivityKit's update budget. No-op while < 1h or paused.
+  void _maybePushAdaptiveDisplay() {
+    final active = ref.read(activeSessionProvider).value;
+    if (active == null || active.isPaused) return;
+    final elapsed = active.elapsedAt(DateTime.now().toUtc());
+    final text = _adaptiveDisplay(elapsed);
+    if (text == null) {
+      _lastAdaptivePushed = null;
+      _lastAdaptivePushAt = null;
+      return;
+    }
+    final now = DateTime.now();
+    final tooRecent =
+        _lastAdaptivePushAt != null &&
+        now.difference(_lastAdaptivePushAt!) < const Duration(seconds: 30);
+    if (text == _lastAdaptivePushed && tooRecent) return;
+    if (tooRecent) return;
+    _lastAdaptivePushed = text;
+    _lastAdaptivePushAt = now;
+    unawaited(
+      ref
+          .read(liveActivityServiceProvider)
+          .update(
+            effectiveStartedAt: active.startedAt,
+            isPaused: false,
+            pausedAtFreezeSeconds: 0,
+            displayText: text,
+          ),
+    );
+  }
+
+  static String? _adaptiveDisplay(Duration elapsed) {
+    final h = elapsed.inHours;
+    final m = elapsed.inMinutes % 60;
+    if (h >= 100) return '${h}h';
+    if (h >= 1) return '$h:${m.toString().padLeft(2, '0')}';
+    return null;
   }
 
   @override
@@ -69,13 +115,17 @@ class _TimerScreenState extends ConsumerState<TimerScreen> {
       final elapsed = resumed.elapsedAt(now);
       // Use start() rather than update() so the Activity is created if it
       // doesn't exist yet (e.g. on cold-start of a previously-paused session).
+      final initialText = _adaptiveDisplay(elapsed);
       unawaited(
         live.start(
           pursuitName: pursuit.name,
           pursuitColorARGB: pursuit.accentColor,
           effectiveStartedAt: now.subtract(elapsed),
+          displayText: initialText,
         ),
       );
+      _lastAdaptivePushed = initialText;
+      _lastAdaptivePushAt = initialText == null ? null : DateTime.now();
     } else {
       final paused = await service.pause();
       unawaited(HapticFeedback.lightImpact());
@@ -87,6 +137,8 @@ class _TimerScreenState extends ConsumerState<TimerScreen> {
           pausedAtFreezeSeconds: elapsed.inSeconds,
         ),
       );
+      _lastAdaptivePushed = null;
+      _lastAdaptivePushAt = null;
     }
   }
 
@@ -98,6 +150,8 @@ class _TimerScreenState extends ConsumerState<TimerScreen> {
     unawaited(HapticFeedback.mediumImpact());
     unawaited(live.end());
     _lastWholeHoursElapsed = -1;
+    _lastAdaptivePushed = null;
+    _lastAdaptivePushAt = null;
     if (!mounted) return;
     if (!result.countedTowardStats) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -125,13 +179,17 @@ class _TimerScreenState extends ConsumerState<TimerScreen> {
     final now = DateTime.now().toUtc();
     final elapsed = active.elapsedAt(now);
     final effectiveStart = now.subtract(elapsed);
+    final initialText = active.isPaused ? null : _adaptiveDisplay(elapsed);
     unawaited(
       live.start(
         pursuitName: pursuit.name,
         pursuitColorARGB: pursuit.accentColor,
         effectiveStartedAt: effectiveStart,
+        displayText: initialText,
       ),
     );
+    _lastAdaptivePushed = initialText;
+    _lastAdaptivePushAt = initialText == null ? null : DateTime.now();
     if (active.isPaused) {
       unawaited(
         live.update(
@@ -313,7 +371,7 @@ class _Body extends StatelessWidget {
                     button: true,
                     child: RingWidget(
                       elapsed: displayElapsed,
-                      targetHours: pursuit.targetHours,
+                      targetMinutes: pursuit.targetMinutes,
                       accent: accent,
                       size: 340,
                     ),
@@ -324,7 +382,7 @@ class _Body extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: _StatsRow(
                     covered: displayElapsed,
-                    targetHours: pursuit.targetHours,
+                    targetMinutes: pursuit.targetMinutes,
                   ),
                 ),
               ],
@@ -402,13 +460,13 @@ class _StreakStrip extends StatelessWidget {
 }
 
 class _StatsRow extends StatelessWidget {
-  const _StatsRow({required this.covered, required this.targetHours});
+  const _StatsRow({required this.covered, required this.targetMinutes});
 
   final Duration covered;
-  final int targetHours;
+  final int targetMinutes;
 
   Duration get _remaining {
-    final r = Duration(hours: targetHours) - covered;
+    final r = Duration(minutes: targetMinutes) - covered;
     return r.isNegative ? Duration.zero : r;
   }
 

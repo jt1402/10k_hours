@@ -41,11 +41,14 @@ struct TenKHoursLiveActivity: Widget {
         Group {
           if context.state.isPaused {
             Text(formatCompactSeconds(context.state.pausedAtFreezeSeconds))
+          } else if let text = context.state.displayText, !text.isEmpty {
+            Text(text)
           } else {
-            TimelineView(.periodic(from: context.state.effectiveStartedAt, by: 1.0)) { timeline in
-              let elapsed = Int(max(0, timeline.date.timeIntervalSince(context.state.effectiveStartedAt)))
-              Text(formatCompactSeconds(elapsed))
-            }
+            Text(
+              timerInterval: context.state.effectiveStartedAt...context.state.effectiveStartedAt.addingTimeInterval(86400 * 365),
+              countsDown: false,
+              showsHours: false
+            )
           }
         }
         .monospacedDigit()
@@ -67,11 +70,14 @@ struct TenKHoursLiveActivity: Widget {
   ) -> some View {
     if state.isPaused {
       Text(formatSeconds(state.pausedAtFreezeSeconds))
+    } else if let text = state.displayText, !text.isEmpty {
+      Text(text)
     } else {
-      TimelineView(.periodic(from: state.effectiveStartedAt, by: 1.0)) { timeline in
-        let elapsed = Int(max(0, timeline.date.timeIntervalSince(state.effectiveStartedAt)))
-        Text(formatSeconds(elapsed))
-      }
+      Text(
+        timerInterval: state.effectiveStartedAt...state.effectiveStartedAt.addingTimeInterval(86400 * 365),
+        countsDown: false,
+        showsHours: true
+      )
     }
   }
 }
@@ -95,12 +101,16 @@ struct LockScreenView: View {
       Group {
         if context.state.isPaused {
           Text(formatSeconds(context.state.pausedAtFreezeSeconds))
+        } else if let text = context.state.displayText, !text.isEmpty {
+          Text(text)
+            .multilineTextAlignment(.trailing)
         } else {
-          TimelineView(.periodic(from: context.state.effectiveStartedAt, by: 1.0)) { timeline in
-            let elapsed = Int(max(0, timeline.date.timeIntervalSince(context.state.effectiveStartedAt)))
-            Text(formatSeconds(elapsed))
-              .multilineTextAlignment(.trailing)
-          }
+          Text(
+            timerInterval: context.state.effectiveStartedAt...context.state.effectiveStartedAt.addingTimeInterval(86400 * 365),
+            countsDown: false,
+            showsHours: true
+          )
+          .multilineTextAlignment(.trailing)
         }
       }
       .font(.system(size: 38, weight: .bold, design: .rounded))

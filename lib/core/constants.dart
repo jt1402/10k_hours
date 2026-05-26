@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-const kDefaultTargetHours = 10000;
+const kDefaultTargetMinutes = 600000; // 10,000 hours
 
 const kSessionMinCountedDuration = Duration(seconds: 60);
 

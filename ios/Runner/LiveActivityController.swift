@@ -10,7 +10,8 @@ final class LiveActivityController {
   func start(
     pursuitName: String,
     pursuitColorARGB: Int,
-    effectiveStartedAt: Date
+    effectiveStartedAt: Date,
+    displayText: String? = nil
   ) {
     NSLog("[LiveActivity] start called for \(pursuitName)")
     guard ActivityAuthorizationInfo().areActivitiesEnabled else {
@@ -32,7 +33,8 @@ final class LiveActivityController {
     let state = TenKHoursLiveActivityAttributes.ContentState(
       effectiveStartedAt: effectiveStartedAt,
       isPaused: false,
-      pausedAtFreezeSeconds: 0
+      pausedAtFreezeSeconds: 0,
+      displayText: displayText
     )
     let content = ActivityContent(state: state, staleDate: nil)
     do {
@@ -50,13 +52,15 @@ final class LiveActivityController {
   func update(
     effectiveStartedAt: Date,
     isPaused: Bool,
-    pausedAtFreezeSeconds: Int
+    pausedAtFreezeSeconds: Int,
+    displayText: String? = nil
   ) async {
     guard let activity = activity else { return }
     let state = TenKHoursLiveActivityAttributes.ContentState(
       effectiveStartedAt: effectiveStartedAt,
       isPaused: isPaused,
-      pausedAtFreezeSeconds: pausedAtFreezeSeconds
+      pausedAtFreezeSeconds: pausedAtFreezeSeconds,
+      displayText: displayText
     )
     let content = ActivityContent(state: state, staleDate: nil)
     await activity.update(content)

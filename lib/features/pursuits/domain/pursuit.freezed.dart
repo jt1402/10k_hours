@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Pursuit {
 
- int get id; String get name; int get accentColor; int get targetHours; DateTime get createdAt;
+ int get id; String get name; int get accentColor; int get targetMinutes; DateTime get createdAt;
 /// Create a copy of Pursuit
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $PursuitCopyWith<Pursuit> get copyWith => _$PursuitCopyWithImpl<Pursuit>(this as
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Pursuit&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.accentColor, accentColor) || other.accentColor == accentColor)&&(identical(other.targetHours, targetHours) || other.targetHours == targetHours)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Pursuit&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.accentColor, accentColor) || other.accentColor == accentColor)&&(identical(other.targetMinutes, targetMinutes) || other.targetMinutes == targetMinutes)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,accentColor,targetHours,createdAt);
+int get hashCode => Object.hash(runtimeType,id,name,accentColor,targetMinutes,createdAt);
 
 @override
 String toString() {
-  return 'Pursuit(id: $id, name: $name, accentColor: $accentColor, targetHours: $targetHours, createdAt: $createdAt)';
+  return 'Pursuit(id: $id, name: $name, accentColor: $accentColor, targetMinutes: $targetMinutes, createdAt: $createdAt)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $PursuitCopyWith<$Res>  {
   factory $PursuitCopyWith(Pursuit value, $Res Function(Pursuit) _then) = _$PursuitCopyWithImpl;
 @useResult
 $Res call({
- int id, String name, int accentColor, int targetHours, DateTime createdAt
+ int id, String name, int accentColor, int targetMinutes, DateTime createdAt
 });
 
 
@@ -62,12 +62,12 @@ class _$PursuitCopyWithImpl<$Res>
 
 /// Create a copy of Pursuit
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? accentColor = null,Object? targetHours = null,Object? createdAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? accentColor = null,Object? targetMinutes = null,Object? createdAt = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,accentColor: null == accentColor ? _self.accentColor : accentColor // ignore: cast_nullable_to_non_nullable
-as int,targetHours: null == targetHours ? _self.targetHours : targetHours // ignore: cast_nullable_to_non_nullable
+as int,targetMinutes: null == targetMinutes ? _self.targetMinutes : targetMinutes // ignore: cast_nullable_to_non_nullable
 as int,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,
   ));
@@ -154,10 +154,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  int accentColor,  int targetHours,  DateTime createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  int accentColor,  int targetMinutes,  DateTime createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Pursuit() when $default != null:
-return $default(_that.id,_that.name,_that.accentColor,_that.targetHours,_that.createdAt);case _:
+return $default(_that.id,_that.name,_that.accentColor,_that.targetMinutes,_that.createdAt);case _:
   return orElse();
 
 }
@@ -175,10 +175,10 @@ return $default(_that.id,_that.name,_that.accentColor,_that.targetHours,_that.cr
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  int accentColor,  int targetHours,  DateTime createdAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  int accentColor,  int targetMinutes,  DateTime createdAt)  $default,) {final _that = this;
 switch (_that) {
 case _Pursuit():
-return $default(_that.id,_that.name,_that.accentColor,_that.targetHours,_that.createdAt);case _:
+return $default(_that.id,_that.name,_that.accentColor,_that.targetMinutes,_that.createdAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -195,10 +195,10 @@ return $default(_that.id,_that.name,_that.accentColor,_that.targetHours,_that.cr
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  int accentColor,  int targetHours,  DateTime createdAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  int accentColor,  int targetMinutes,  DateTime createdAt)?  $default,) {final _that = this;
 switch (_that) {
 case _Pursuit() when $default != null:
-return $default(_that.id,_that.name,_that.accentColor,_that.targetHours,_that.createdAt);case _:
+return $default(_that.id,_that.name,_that.accentColor,_that.targetMinutes,_that.createdAt);case _:
   return null;
 
 }
@@ -210,13 +210,13 @@ return $default(_that.id,_that.name,_that.accentColor,_that.targetHours,_that.cr
 
 
 class _Pursuit implements Pursuit {
-  const _Pursuit({required this.id, required this.name, required this.accentColor, required this.targetHours, required this.createdAt});
+  const _Pursuit({required this.id, required this.name, required this.accentColor, required this.targetMinutes, required this.createdAt});
   
 
 @override final  int id;
 @override final  String name;
 @override final  int accentColor;
-@override final  int targetHours;
+@override final  int targetMinutes;
 @override final  DateTime createdAt;
 
 /// Create a copy of Pursuit
@@ -229,16 +229,16 @@ _$PursuitCopyWith<_Pursuit> get copyWith => __$PursuitCopyWithImpl<_Pursuit>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Pursuit&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.accentColor, accentColor) || other.accentColor == accentColor)&&(identical(other.targetHours, targetHours) || other.targetHours == targetHours)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Pursuit&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.accentColor, accentColor) || other.accentColor == accentColor)&&(identical(other.targetMinutes, targetMinutes) || other.targetMinutes == targetMinutes)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,accentColor,targetHours,createdAt);
+int get hashCode => Object.hash(runtimeType,id,name,accentColor,targetMinutes,createdAt);
 
 @override
 String toString() {
-  return 'Pursuit(id: $id, name: $name, accentColor: $accentColor, targetHours: $targetHours, createdAt: $createdAt)';
+  return 'Pursuit(id: $id, name: $name, accentColor: $accentColor, targetMinutes: $targetMinutes, createdAt: $createdAt)';
 }
 
 
@@ -249,7 +249,7 @@ abstract mixin class _$PursuitCopyWith<$Res> implements $PursuitCopyWith<$Res> {
   factory _$PursuitCopyWith(_Pursuit value, $Res Function(_Pursuit) _then) = __$PursuitCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String name, int accentColor, int targetHours, DateTime createdAt
+ int id, String name, int accentColor, int targetMinutes, DateTime createdAt
 });
 
 
@@ -266,12 +266,12 @@ class __$PursuitCopyWithImpl<$Res>
 
 /// Create a copy of Pursuit
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? accentColor = null,Object? targetHours = null,Object? createdAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? accentColor = null,Object? targetMinutes = null,Object? createdAt = null,}) {
   return _then(_Pursuit(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,accentColor: null == accentColor ? _self.accentColor : accentColor // ignore: cast_nullable_to_non_nullable
-as int,targetHours: null == targetHours ? _self.targetHours : targetHours // ignore: cast_nullable_to_non_nullable
+as int,targetMinutes: null == targetMinutes ? _self.targetMinutes : targetMinutes // ignore: cast_nullable_to_non_nullable
 as int,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,
   ));

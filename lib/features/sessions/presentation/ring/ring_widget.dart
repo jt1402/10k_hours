@@ -6,18 +6,18 @@ import 'package:ten_k_hours/features/sessions/presentation/ring/ring_painter.dar
 class RingWidget extends StatelessWidget {
   const RingWidget({
     required this.elapsed,
-    required this.targetHours,
+    required this.targetMinutes,
     required this.accent,
     this.size = 280,
     super.key,
   });
 
   final Duration elapsed;
-  final int targetHours;
+  final int targetMinutes;
   final Color accent;
   final double size;
 
-  Duration get _target => Duration(hours: targetHours);
+  Duration get _target => Duration(minutes: targetMinutes);
 
   double get _progress {
     if (_target.inMilliseconds == 0) return 0;
@@ -29,7 +29,15 @@ class RingWidget extends StatelessWidget {
     return r.isNegative ? Duration.zero : r;
   }
 
+  // Sub-1h targets show MM:SS remaining (live tick happens at parent's ticker
+  // since this widget rebuilds on every elapsed change). Multi-hour targets
+  // show H:MM (or just the hour count when >= 100h).
   String _formatRemaining() {
+    if (targetMinutes < 60) {
+      final m = _remaining.inMinutes;
+      final s = _remaining.inSeconds % 60;
+      return '$m:${s.toString().padLeft(2, '0')}';
+    }
     final totalMinutes = _remaining.inMinutes;
     final hours = totalMinutes ~/ 60;
     final minutes = totalMinutes % 60;
@@ -40,6 +48,12 @@ class RingWidget extends StatelessWidget {
     return '$hours:$mm';
   }
 
+  String _remainingLabel() {
+    if (targetMinutes < 60) return 'minutes : seconds left';
+    final h = _remaining.inMinutes ~/ 60;
+    return h >= 100 ? 'hours left' : 'hours : minutes left';
+  }
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
@@ -48,7 +62,7 @@ class RingWidget extends StatelessWidget {
     final ringFontSize = remainingHours >= 1000 ? 72.0 : 88.0;
     return Semantics(
       label:
-          '${_remaining.inHours} hours remaining of $targetHours hour target',
+          '${_remaining.inMinutes} minutes remaining of $targetMinutes minute target',
       child: SizedBox(
         width: size,
         height: size,
@@ -72,7 +86,7 @@ class RingWidget extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  remainingHours >= 100 ? 'hours left' : 'hours : minutes left',
+                  _remainingLabel(),
                   style: theme.textTheme.bodySmall,
                 ),
               ],

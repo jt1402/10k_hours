@@ -12,15 +12,21 @@ public struct TenKHoursLiveActivityAttributes: ActivityAttributes {
     public var isPaused: Bool
     // When paused, the frozen elapsed seconds (used for static display).
     public var pausedAtFreezeSeconds: Int
+    // Optional pre-formatted text. When set (non-nil), the widget displays
+    // this instead of the auto-ticking Text(timerInterval:). Pushed from Dart
+    // for adaptive formats (H:MM, Nh) that timerInterval can't produce.
+    public var displayText: String?
 
     public init(
       effectiveStartedAt: Date,
       isPaused: Bool,
-      pausedAtFreezeSeconds: Int
+      pausedAtFreezeSeconds: Int,
+      displayText: String? = nil
     ) {
       self.effectiveStartedAt = effectiveStartedAt
       self.isPaused = isPaused
       self.pausedAtFreezeSeconds = pausedAtFreezeSeconds
+      self.displayText = displayText
     }
   }
 

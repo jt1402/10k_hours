@@ -48,7 +48,8 @@ import UIKit
       LiveActivityController.shared.start(
         pursuitName: name,
         pursuitColorARGB: argb,
-        effectiveStartedAt: Date(timeIntervalSince1970: startedAtMs.doubleValue / 1000.0)
+        effectiveStartedAt: Date(timeIntervalSince1970: startedAtMs.doubleValue / 1000.0),
+        displayText: args["displayText"] as? String
       )
       result(nil)
     case "update":
@@ -64,7 +65,8 @@ import UIKit
         await LiveActivityController.shared.update(
           effectiveStartedAt: Date(timeIntervalSince1970: startedAtMs.doubleValue / 1000.0),
           isPaused: isPaused,
-          pausedAtFreezeSeconds: freeze.intValue
+          pausedAtFreezeSeconds: freeze.intValue,
+          displayText: args["displayText"] as? String
         )
         result(nil)
       }

@@ -103,6 +103,16 @@ class DriftSessionRepository implements SessionRepository {
   }
 
   @override
+  Future<int> countFor(int pursuitId) async {
+    final count = _db.sessions.id.count();
+    final query = _db.selectOnly(_db.sessions)
+      ..addColumns([count])
+      ..where(_db.sessions.pursuitId.equals(pursuitId));
+    final row = await query.getSingle();
+    return row.read(count) ?? 0;
+  }
+
+  @override
   Stream<Map<DateTime, Duration>> watchDailyTotals(int pursuitId) {
     return _db
         .customSelect(

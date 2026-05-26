@@ -19,6 +19,7 @@ class LiveActivityService {
     required String pursuitName,
     required int pursuitColorARGB,
     required DateTime effectiveStartedAt,
+    String? displayText,
   }) async {
     if (!isSupported) return;
     try {
@@ -26,6 +27,7 @@ class LiveActivityService {
         'pursuitName': pursuitName,
         'pursuitColorARGB': pursuitColorARGB,
         'effectiveStartedAtMs': effectiveStartedAt.millisecondsSinceEpoch,
+        if (displayText != null) 'displayText': displayText,
       });
     } on Object catch (_) {
       // intentionally swallowed — Live Activity is non-critical UX
@@ -36,6 +38,7 @@ class LiveActivityService {
     required DateTime effectiveStartedAt,
     required bool isPaused,
     required int pausedAtFreezeSeconds,
+    String? displayText,
   }) async {
     if (!isSupported) return;
     try {
@@ -43,6 +46,7 @@ class LiveActivityService {
         'effectiveStartedAtMs': effectiveStartedAt.millisecondsSinceEpoch,
         'isPaused': isPaused,
         'pausedAtFreezeSeconds': pausedAtFreezeSeconds,
+        if (displayText != null) 'displayText': displayText,
       });
     } on Object catch (_) {
       // intentionally swallowed — Live Activity is non-critical UX

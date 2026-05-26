@@ -20,5 +20,7 @@ abstract class SessionRepository {
 
   Future<Duration> totalCountedDurationFor(int pursuitId);
 
+  Future<int> countFor(int pursuitId);
+
   Stream<Map<DateTime, Duration>> watchDailyTotals(int pursuitId);
 }

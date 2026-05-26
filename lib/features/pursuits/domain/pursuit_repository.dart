@@ -4,10 +4,12 @@ abstract class PursuitRepository {
   Future<Pursuit> create({
     required String name,
     required int accentColor,
-    int targetHours,
+    int targetMinutes,
   });
 
   Future<Pursuit?> getById(int id);
 
   Stream<List<Pursuit>> watchAll();
+
+  Future<void> delete(int id);
 }

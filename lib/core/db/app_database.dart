@@ -19,7 +19,24 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.memory() : super(NativeDatabase.memory());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onCreate: (m) => m.createAll(),
+    onUpgrade: (m, from, to) async {
+      if (from < 2) {
+        // v1 stored target_hours (int). v2 stores target_minutes (int).
+        // Rename the column in place and convert existing values *60.
+        await customStatement(
+          'ALTER TABLE pursuits RENAME COLUMN target_hours TO target_minutes',
+        );
+        await customStatement(
+          'UPDATE pursuits SET target_minutes = target_minutes * 60',
+        );
+      }
+    },
+  );
 }
 
 LazyDatabase _openConnection() {

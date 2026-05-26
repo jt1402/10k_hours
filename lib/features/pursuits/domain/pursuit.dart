@@ -8,7 +8,7 @@ abstract class Pursuit with _$Pursuit {
     required int id,
     required String name,
     required int accentColor,
-    required int targetHours,
+    required int targetMinutes,
     required DateTime createdAt,
   }) = _Pursuit;
 }

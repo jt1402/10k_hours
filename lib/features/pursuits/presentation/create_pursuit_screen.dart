@@ -1,9 +1,12 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ten_k_hours/core/constants.dart';
 import 'package:ten_k_hours/features/pursuits/data/pursuit_providers.dart';
+
+enum _TargetMode { defaultGoal, shortTimer, longGoal }
 
 class CreatePursuitScreen extends ConsumerStatefulWidget {
   const CreatePursuitScreen({super.key});
@@ -16,29 +19,45 @@ class CreatePursuitScreen extends ConsumerStatefulWidget {
 class _CreatePursuitScreenState extends ConsumerState<CreatePursuitScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameCtrl = TextEditingController();
-  final _targetCtrl = TextEditingController(text: '$kDefaultTargetHours');
-  bool _customizeTarget = false;
+  final _longHoursCtrl = TextEditingController(
+    text: '${kDefaultTargetMinutes ~/ 60}',
+  );
+  _TargetMode _mode = _TargetMode.defaultGoal;
+  Duration _shortDuration = const Duration(minutes: 30);
   bool _submitting = false;
 
   @override
   void dispose() {
     _nameCtrl.dispose();
-    _targetCtrl.dispose();
+    _longHoursCtrl.dispose();
     super.dispose();
+  }
+
+  int _resolveTargetMinutes() {
+    switch (_mode) {
+      case _TargetMode.defaultGoal:
+        return kDefaultTargetMinutes;
+      case _TargetMode.shortTimer:
+        // Apple's picker hard-caps at 23:59:59. Floor to at least 1 minute.
+        final m = _shortDuration.inMinutes;
+        return m < 1 ? 1 : m;
+      case _TargetMode.longGoal:
+        final h = int.tryParse(_longHoursCtrl.text) ?? 0;
+        return h * 60;
+    }
   }
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+    final targetMinutes = _resolveTargetMinutes();
+    if (targetMinutes <= 0) return;
     setState(() => _submitting = true);
     try {
       final repo = ref.read(pursuitRepositoryProvider);
-      final target = _customizeTarget
-          ? int.parse(_targetCtrl.text)
-          : kDefaultTargetHours;
       final pursuit = await repo.create(
         name: _nameCtrl.text.trim(),
         accentColor: kDefaultAccentColor.toARGB32(),
-        targetHours: target,
+        targetMinutes: targetMinutes,
       );
       if (!mounted) return;
       context.go('/pursuit/${pursuit.id}');
@@ -55,7 +74,7 @@ class _CreatePursuitScreenState extends ConsumerState<CreatePursuitScreen> {
       body: SafeArea(
         child: Form(
           key: _formKey,
-          child: Padding(
+          child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -81,37 +100,32 @@ class _CreatePursuitScreenState extends ConsumerState<CreatePursuitScreen> {
                   },
                 ),
                 const SizedBox(height: 24),
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  value: _customizeTarget,
-                  onChanged: (v) => setState(() => _customizeTarget = v),
-                  title: const Text('Customize target hours'),
-                  subtitle: Text(
-                    _customizeTarget
-                        ? 'Choose any number of hours'
-                        : 'Default: $kDefaultTargetHours hours',
-                  ),
+                Text(
+                  'Target',
+                  style: theme.textTheme.titleMedium,
                 ),
-                if (_customizeTarget) ...[
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _targetCtrl,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    decoration: const InputDecoration(
-                      labelText: 'Target hours',
-                      border: OutlineInputBorder(),
+                const SizedBox(height: 8),
+                SegmentedButton<_TargetMode>(
+                  segments: const [
+                    ButtonSegment(
+                      value: _TargetMode.defaultGoal,
+                      label: Text('10,000 h'),
                     ),
-                    validator: (v) {
-                      final n = int.tryParse(v ?? '');
-                      if (n == null || n <= 0) {
-                        return 'Must be a positive number';
-                      }
-                      return null;
-                    },
-                  ),
-                ],
-                const Spacer(),
+                    ButtonSegment(
+                      value: _TargetMode.shortTimer,
+                      label: Text('Short'),
+                    ),
+                    ButtonSegment(
+                      value: _TargetMode.longGoal,
+                      label: Text('Custom'),
+                    ),
+                  ],
+                  selected: {_mode},
+                  onSelectionChanged: (s) => setState(() => _mode = s.first),
+                ),
+                const SizedBox(height: 16),
+                _modeBody(theme),
+                const SizedBox(height: 32),
                 FilledButton(
                   onPressed: _submitting ? null : _submit,
                   child: _submitting
@@ -128,5 +142,56 @@ class _CreatePursuitScreenState extends ConsumerState<CreatePursuitScreen> {
         ),
       ),
     );
+  }
+
+  Widget _modeBody(ThemeData theme) {
+    switch (_mode) {
+      case _TargetMode.defaultGoal:
+        return Text(
+          'The classic 10,000-hour goal. Best for long-term mastery.',
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        );
+      case _TargetMode.shortTimer:
+        return Column(
+          children: [
+            Text(
+              'Pick hours, minutes, seconds. Max 23:59:59.',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              height: 216,
+              child: CupertinoTimerPicker(
+                mode: CupertinoTimerPickerMode.hms,
+                initialTimerDuration: _shortDuration,
+                minuteInterval: 1,
+                secondInterval: 1,
+                onTimerDurationChanged: (d) =>
+                    setState(() => _shortDuration = d),
+              ),
+            ),
+          ],
+        );
+      case _TargetMode.longGoal:
+        return TextFormField(
+          controller: _longHoursCtrl,
+          keyboardType: TextInputType.number,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          decoration: const InputDecoration(
+            labelText: 'Target hours',
+            border: OutlineInputBorder(),
+          ),
+          validator: (v) {
+            if (_mode != _TargetMode.longGoal) return null;
+            final n = int.tryParse(v ?? '');
+            if (n == null || n <= 0) return 'Must be a positive number';
+            return null;
+          },
+        );
+    }
   }
 }

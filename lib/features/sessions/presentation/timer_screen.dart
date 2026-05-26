@@ -90,8 +90,9 @@ class _TimerScreenState extends ConsumerState<TimerScreen> {
   Widget build(BuildContext context) {
     final pursuitAsync = ref.watch(pursuitByIdProvider(widget.pursuitId));
     final activeAsync = ref.watch(activeSessionProvider);
-    final totalAsync =
-        ref.watch(totalCountedDurationProvider(widget.pursuitId));
+    final totalAsync = ref.watch(
+      totalCountedDurationProvider(widget.pursuitId),
+    );
 
     final active = activeAsync.value;
     final isThisPursuit = active?.pursuitId == widget.pursuitId;
@@ -159,8 +160,8 @@ class _Body extends StatelessWidget {
     final status = active == null
         ? 'tap to start'
         : active!.isPaused
-            ? 'paused — tap to resume, hold to stop'
-            : 'running — tap to pause, hold to stop';
+        ? 'paused — tap to resume, hold to stop'
+        : 'running — tap to pause, hold to stop';
 
     return Column(
       children: [

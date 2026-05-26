@@ -5,13 +5,12 @@ import 'package:ten_k_hours/core/db/tables/pursuits.dart';
 class ActiveSession extends Table {
   IntColumn get id => integer().withDefault(const Constant(1))();
   IntColumn get pursuitId => integer().references(
-        Pursuits,
-        #id,
-        onDelete: KeyAction.cascade,
-      )();
+    Pursuits,
+    #id,
+    onDelete: KeyAction.cascade,
+  )();
   DateTimeColumn get startedAt => dateTime()();
-  IntColumn get pausedTotalMs =>
-      integer().withDefault(const Constant(0))();
+  IntColumn get pausedTotalMs => integer().withDefault(const Constant(0))();
   DateTimeColumn get pauseStartedAt => dateTime().nullable()();
 
   @override

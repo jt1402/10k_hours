@@ -17,13 +17,15 @@ Widget _harness(Widget child) {
 void main() {
   group('RingWidget goldens', () {
     testWidgets('0%', (tester) async {
-      await tester.pumpWidget(_harness(
-        const RingWidget(
-          elapsed: Duration.zero,
-          targetHours: kDefaultTargetHours,
-          accent: kDefaultAccentColor,
+      await tester.pumpWidget(
+        _harness(
+          const RingWidget(
+            elapsed: Duration.zero,
+            targetHours: kDefaultTargetHours,
+            accent: kDefaultAccentColor,
+          ),
         ),
-      ));
+      );
       await expectLater(
         find.byType(RingWidget),
         matchesGoldenFile('goldens/ring_0pct.png'),
@@ -31,13 +33,15 @@ void main() {
     });
 
     testWidgets('47%', (tester) async {
-      await tester.pumpWidget(_harness(
-        const RingWidget(
-          elapsed: Duration(hours: 4700),
-          targetHours: kDefaultTargetHours,
-          accent: kDefaultAccentColor,
+      await tester.pumpWidget(
+        _harness(
+          const RingWidget(
+            elapsed: Duration(hours: 4700),
+            targetHours: kDefaultTargetHours,
+            accent: kDefaultAccentColor,
+          ),
         ),
-      ));
+      );
       await expectLater(
         find.byType(RingWidget),
         matchesGoldenFile('goldens/ring_47pct.png'),
@@ -45,13 +49,15 @@ void main() {
     });
 
     testWidgets('100%', (tester) async {
-      await tester.pumpWidget(_harness(
-        const RingWidget(
-          elapsed: Duration(hours: 10000),
-          targetHours: kDefaultTargetHours,
-          accent: kDefaultAccentColor,
+      await tester.pumpWidget(
+        _harness(
+          const RingWidget(
+            elapsed: Duration(hours: 10000),
+            targetHours: kDefaultTargetHours,
+            accent: kDefaultAccentColor,
+          ),
         ),
-      ));
+      );
       await expectLater(
         find.byType(RingWidget),
         matchesGoldenFile('goldens/ring_100pct.png'),

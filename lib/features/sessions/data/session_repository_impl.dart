@@ -30,7 +30,9 @@ class DriftSessionRepository implements SessionRepository {
   Future<void> setActive(ActiveSession active) async {
     await _db.transaction(() async {
       await _db.delete(_db.activeSession).go();
-      await _db.into(_db.activeSession).insert(
+      await _db
+          .into(_db.activeSession)
+          .insert(
             ActiveSessionCompanion.insert(
               pursuitId: active.pursuitId,
               startedAt: active.startedAt,
@@ -53,7 +55,9 @@ class DriftSessionRepository implements SessionRepository {
     required DateTime endedAt,
     required Duration duration,
   }) async {
-    final row = await _db.into(_db.sessions).insertReturning(
+    final row = await _db
+        .into(_db.sessions)
+        .insertReturning(
           SessionsCompanion.insert(
             pursuitId: pursuitId,
             startedAt: startedAt,
@@ -75,9 +79,11 @@ class DriftSessionRepository implements SessionRepository {
   @override
   Stream<List<Session>> watchForStats(int pursuitId) {
     final query = _db.select(_db.sessions)
-      ..where((t) =>
-          t.pursuitId.equals(pursuitId) &
-          t.durationMs.isBiggerOrEqualValue(_minCountedMs))
+      ..where(
+        (t) =>
+            t.pursuitId.equals(pursuitId) &
+            t.durationMs.isBiggerOrEqualValue(_minCountedMs),
+      )
       ..orderBy([(t) => OrderingTerm.desc(t.startedAt)]);
     return query.watch().map((rows) => rows.map(_sessionToDomain).toList());
   }
@@ -97,17 +103,17 @@ class DriftSessionRepository implements SessionRepository {
   }
 
   ActiveSession _activeToDomain(ActiveSessionRow row) => ActiveSession(
-        pursuitId: row.pursuitId,
-        startedAt: row.startedAt.toUtc(),
-        pausedTotal: Duration(milliseconds: row.pausedTotalMs),
-        pauseStartedAt: row.pauseStartedAt?.toUtc(),
-      );
+    pursuitId: row.pursuitId,
+    startedAt: row.startedAt.toUtc(),
+    pausedTotal: Duration(milliseconds: row.pausedTotalMs),
+    pauseStartedAt: row.pauseStartedAt?.toUtc(),
+  );
 
   Session _sessionToDomain(SessionRow row) => Session(
-        id: row.id,
-        pursuitId: row.pursuitId,
-        startedAt: row.startedAt.toUtc(),
-        endedAt: row.endedAt.toUtc(),
-        duration: Duration(milliseconds: row.durationMs),
-      );
+    id: row.id,
+    pursuitId: row.pursuitId,
+    startedAt: row.startedAt.toUtc(),
+    endedAt: row.endedAt.toUtc(),
+    duration: Duration(milliseconds: row.durationMs),
+  );
 }

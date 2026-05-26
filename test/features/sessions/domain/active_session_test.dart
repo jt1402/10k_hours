@@ -12,8 +12,10 @@ void main() {
 
     test('grows with wall-clock time when running', () {
       final s = ActiveSession(pursuitId: 1, startedAt: t0);
-      expect(s.elapsedAt(t0.add(const Duration(minutes: 10))),
-          const Duration(minutes: 10));
+      expect(
+        s.elapsedAt(t0.add(const Duration(minutes: 10))),
+        const Duration(minutes: 10),
+      );
     });
 
     test('subtracts pausedTotal once accumulated', () {
@@ -22,8 +24,10 @@ void main() {
         startedAt: t0,
         pausedTotal: const Duration(minutes: 3),
       );
-      expect(s.elapsedAt(t0.add(const Duration(minutes: 10))),
-          const Duration(minutes: 7));
+      expect(
+        s.elapsedAt(t0.add(const Duration(minutes: 10))),
+        const Duration(minutes: 7),
+      );
     });
 
     test('subtracts active pause-in-progress on top of pausedTotal', () {
@@ -35,8 +39,10 @@ void main() {
       );
       // started at 0, paused-total 2 already, then paused at 5, asked at 10.
       // elapsed = 10 - 2 (prior pause) - 5 (active pause) = 3 minutes.
-      expect(s.elapsedAt(t0.add(const Duration(minutes: 10))),
-          const Duration(minutes: 3));
+      expect(
+        s.elapsedAt(t0.add(const Duration(minutes: 10))),
+        const Duration(minutes: 3),
+      );
     });
 
     test('clamps to zero if math goes negative (clock skew defensiveness)', () {

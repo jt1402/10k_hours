@@ -15,7 +15,9 @@ class DriftPursuitRepository implements PursuitRepository {
     required int accentColor,
     int targetHours = kDefaultTargetHours,
   }) async {
-    final row = await _db.into(_db.pursuits).insertReturning(
+    final row = await _db
+        .into(_db.pursuits)
+        .insertReturning(
           PursuitsCompanion.insert(
             name: name,
             accentColor: accentColor,
@@ -28,9 +30,9 @@ class DriftPursuitRepository implements PursuitRepository {
 
   @override
   Future<Pursuit?> getById(int id) async {
-    final row = await (_db.select(_db.pursuits)
-          ..where((t) => t.id.equals(id)))
-        .getSingleOrNull();
+    final row = await (_db.select(
+      _db.pursuits,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
     return row == null ? null : _toDomain(row);
   }
 
@@ -42,10 +44,10 @@ class DriftPursuitRepository implements PursuitRepository {
   }
 
   Pursuit _toDomain(PursuitRow row) => Pursuit(
-        id: row.id,
-        name: row.name,
-        accentColor: row.accentColor,
-        targetHours: row.targetHours,
-        createdAt: row.createdAt.toUtc(),
-      );
+    id: row.id,
+    name: row.name,
+    accentColor: row.accentColor,
+    targetHours: row.targetHours,
+    createdAt: row.createdAt.toUtc(),
+  );
 }

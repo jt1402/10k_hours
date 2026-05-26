@@ -95,8 +95,11 @@ void main() {
       final result = await service.stop();
       expect(result.session.duration, const Duration(seconds: 30));
       expect(result.countedTowardStats, isFalse);
-      expect(repo.inserted, hasLength(1),
-          reason: 'raw row still persisted for honest history');
+      expect(
+        repo.inserted,
+        hasLength(1),
+        reason: 'raw row still persisted for honest history',
+      );
     });
 
     test('countedTowardStats is true at exactly 60s', () async {

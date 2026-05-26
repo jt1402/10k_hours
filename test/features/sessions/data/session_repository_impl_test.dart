@@ -14,8 +14,9 @@ void main() {
   setUp(() async {
     db = AppDatabase.memory();
     repo = DriftSessionRepository(db);
-    final p = await DriftPursuitRepository(db)
-        .create(name: 'P', accentColor: 0xFF14B8A6);
+    final p = await DriftPursuitRepository(
+      db,
+    ).create(name: 'P', accentColor: 0xFF14B8A6);
     pursuitId = p.id;
   });
 
@@ -64,7 +65,9 @@ void main() {
         ActiveSession(pursuitId: pursuitId, startedAt: DateTime.utc(2026)),
       );
       expect(
-        () => db.into(db.activeSession).insert(
+        () => db
+            .into(db.activeSession)
+            .insert(
               ActiveSessionCompanion.insert(
                 id: const Value(2),
                 pursuitId: pursuitId,

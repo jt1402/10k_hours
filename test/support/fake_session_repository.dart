@@ -59,18 +59,22 @@ class FakeSessionRepository implements SessionRepository {
   @override
   Stream<List<Session>> watchForStats(int pursuitId) async* {
     yield _sessions
-        .where((s) =>
-            s.pursuitId == pursuitId &&
-            s.duration >= const Duration(seconds: 60))
+        .where(
+          (s) =>
+              s.pursuitId == pursuitId &&
+              s.duration >= const Duration(seconds: 60),
+        )
         .toList();
   }
 
   @override
   Future<Duration> totalCountedDurationFor(int pursuitId) async {
     return _sessions
-        .where((s) =>
-            s.pursuitId == pursuitId &&
-            s.duration >= const Duration(seconds: 60))
+        .where(
+          (s) =>
+              s.pursuitId == pursuitId &&
+              s.duration >= const Duration(seconds: 60),
+        )
         .fold<Duration>(Duration.zero, (acc, s) => acc + s.duration);
   }
 }

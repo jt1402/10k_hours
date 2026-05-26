@@ -42,11 +42,10 @@ struct TenKHoursLiveActivity: Widget {
           if context.state.isPaused {
             Text(formatCompactSeconds(context.state.pausedAtFreezeSeconds))
           } else {
-            Text(
-              timerInterval: context.state.effectiveStartedAt...context.state.effectiveStartedAt.addingTimeInterval(86400),
-              countsDown: false,
-              showsHours: false
-            )
+            TimelineView(.periodic(from: context.state.effectiveStartedAt, by: 1.0)) { timeline in
+              let elapsed = Int(max(0, timeline.date.timeIntervalSince(context.state.effectiveStartedAt)))
+              Text(formatCompactSeconds(elapsed))
+            }
           }
         }
         .monospacedDigit()
@@ -69,11 +68,10 @@ struct TenKHoursLiveActivity: Widget {
     if state.isPaused {
       Text(formatSeconds(state.pausedAtFreezeSeconds))
     } else {
-      Text(
-        timerInterval: state.effectiveStartedAt...state.effectiveStartedAt.addingTimeInterval(86400),
-        countsDown: false,
-        showsHours: true
-      )
+      TimelineView(.periodic(from: state.effectiveStartedAt, by: 1.0)) { timeline in
+        let elapsed = Int(max(0, timeline.date.timeIntervalSince(state.effectiveStartedAt)))
+        Text(formatSeconds(elapsed))
+      }
     }
   }
 }
@@ -98,8 +96,11 @@ struct LockScreenView: View {
         if context.state.isPaused {
           Text(formatSeconds(context.state.pausedAtFreezeSeconds))
         } else {
-          Text(context.state.effectiveStartedAt, style: .timer)
-            .multilineTextAlignment(.trailing)
+          TimelineView(.periodic(from: context.state.effectiveStartedAt, by: 1.0)) { timeline in
+            let elapsed = Int(max(0, timeline.date.timeIntervalSince(context.state.effectiveStartedAt)))
+            Text(formatSeconds(elapsed))
+              .multilineTextAlignment(.trailing)
+          }
         }
       }
       .font(.system(size: 38, weight: .bold, design: .rounded))
@@ -117,6 +118,9 @@ func formatSeconds(_ s: Int) -> String {
   let h = s / 3600
   let m = (s % 3600) / 60
   let sec = s % 60
+  if h >= 1000 {
+    return "\(h)h"
+  }
   return String(format: "%02d:%02d:%02d", h, m, sec)
 }
 
@@ -124,8 +128,11 @@ func formatCompactSeconds(_ s: Int) -> String {
   let h = s / 3600
   let m = (s % 3600) / 60
   let sec = s % 60
+  if h >= 100 {
+    return "\(h)h"
+  }
   if h > 0 {
-    return String(format: "%d:%02d:%02d", h, m, sec)
+    return String(format: "%d:%02d", h, m)
   }
   return String(format: "%02d:%02d", m, sec)
 }
@@ -162,8 +169,12 @@ private func _previewState(elapsed: TimeInterval, paused: Bool = false) -> TenKH
 #Preview("Compact", as: .dynamicIsland(.compact), using: _previewAttrs) {
   TenKHoursLiveActivity()
 } contentStates: {
-  _previewState(elapsed: 1218)   // 20:18
-  _previewState(elapsed: 4530)   // 1:15:30
+  _previewState(elapsed: 1218)     // 20:18
+  _previewState(elapsed: 4530)     // 1:15:30
+  _previewState(elapsed: 14400)    // 4 hours
+  _previewState(elapsed: 43200)    // 12 hours
+  _previewState(elapsed: 14400, paused: true)
+  _previewState(elapsed: 43200, paused: true)
   _previewState(elapsed: 1218, paused: true)
 }
 
@@ -172,7 +183,10 @@ private func _previewState(elapsed: TimeInterval, paused: Bool = false) -> TenKH
   TenKHoursLiveActivity()
 } contentStates: {
   _previewState(elapsed: 1218)
-  _previewState(elapsed: 1218, paused: true)
+  _previewState(elapsed: 14400)    // 4 hours
+  _previewState(elapsed: 43200)    // 12 hours
+  _previewState(elapsed: 14400, paused: true)
+  _previewState(elapsed: 43200, paused: true)
 }
 
 @available(iOS 17.0, *)
@@ -187,6 +201,10 @@ private func _previewState(elapsed: TimeInterval, paused: Bool = false) -> TenKH
   TenKHoursLiveActivity()
 } contentStates: {
   _previewState(elapsed: 1218)
+  _previewState(elapsed: 14400)    // 4 hours
+  _previewState(elapsed: 43200)    // 12 hours
+  _previewState(elapsed: 14400, paused: true)
+  _previewState(elapsed: 43200, paused: true)
   _previewState(elapsed: 4530)
   _previewState(elapsed: 1218, paused: true)
 }

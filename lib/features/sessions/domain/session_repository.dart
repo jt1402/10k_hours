@@ -19,4 +19,6 @@ abstract class SessionRepository {
   Stream<List<Session>> watchForStats(int pursuitId);
 
   Future<Duration> totalCountedDurationFor(int pursuitId);
+
+  Stream<Map<DateTime, Duration>> watchDailyTotals(int pursuitId);
 }

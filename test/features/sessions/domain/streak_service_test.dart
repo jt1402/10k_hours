@@ -106,28 +106,30 @@ void main() {
       expect(s, const Streaks(currentDays: 2, longestDays: 2));
     });
 
-    test('Korean timezone (+9): a session at 23:00 KST stays in that local day',
-        () {
-      // Korean offset
-      final nowKst = DateTime(2026, 5, 26, 23, 30);
-      // A UTC instant of 14:30 same day is 23:30 KST → "today"
-      final lateLocalSession = Session(
-        id: 1,
-        pursuitId: 1,
-        startedAt: DateTime.utc(2026, 5, 26, 14, 30),
-        endedAt: DateTime.utc(2026, 5, 26, 15, 30),
-        duration: const Duration(hours: 1),
-      );
-      final s = service.compute(
-        countedSessions: [lateLocalSession],
-        nowLocal: nowKst,
-      );
-      // This test relies on the runner's actual local offset; we only assert
-      // that the single session is counted (current >= 1) — strict bucket
-      // assertions require pinning the test process timezone.
-      expect(s.currentDays, greaterThanOrEqualTo(1));
-      expect(s.longestDays, 1);
-    });
+    test(
+      'Korean timezone (+9): a session at 23:00 KST stays in that local day',
+      () {
+        // Korean offset
+        final nowKst = DateTime(2026, 5, 26, 23, 30);
+        // A UTC instant of 14:30 same day is 23:30 KST → "today"
+        final lateLocalSession = Session(
+          id: 1,
+          pursuitId: 1,
+          startedAt: DateTime.utc(2026, 5, 26, 14, 30),
+          endedAt: DateTime.utc(2026, 5, 26, 15, 30),
+          duration: const Duration(hours: 1),
+        );
+        final s = service.compute(
+          countedSessions: [lateLocalSession],
+          nowLocal: nowKst,
+        );
+        // This test relies on the runner's actual local offset; we only assert
+        // that the single session is counted (current >= 1) — strict bucket
+        // assertions require pinning the test process timezone.
+        expect(s.currentDays, greaterThanOrEqualTo(1));
+        expect(s.longestDays, 1);
+      },
+    );
   });
 }
 

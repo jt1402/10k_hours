@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:ten_k_hours/features/pursuits/presentation/create_pursuit_screen.dart';
 import 'package:ten_k_hours/features/pursuits/presentation/home_screen.dart';
+import 'package:ten_k_hours/features/sessions/presentation/heatmap/heatmap_screen.dart';
 import 'package:ten_k_hours/features/sessions/presentation/timer_screen.dart';
 
 part 'app_router.g.dart';
@@ -24,6 +25,14 @@ GoRouter goRouter(Ref ref) {
         builder: (_, state) => TimerScreen(
           pursuitId: int.parse(state.pathParameters['id']!),
         ),
+        routes: [
+          GoRoute(
+            path: 'heatmap',
+            builder: (_, state) => HeatmapScreen(
+              pursuitId: int.parse(state.pathParameters['id']!),
+            ),
+          ),
+        ],
       ),
     ],
   );

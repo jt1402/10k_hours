@@ -102,6 +102,38 @@ class DriftSessionRepository implements SessionRepository {
     return Duration(milliseconds: total);
   }
 
+  @override
+  Stream<Map<DateTime, Duration>> watchDailyTotals(int pursuitId) {
+    return _db
+        .customSelect(
+          "SELECT date(started_at, 'unixepoch', 'localtime') AS day, "
+          'SUM(duration_ms) AS total_ms FROM sessions '
+          'WHERE pursuit_id = ? AND duration_ms >= ? '
+          'GROUP BY day',
+          variables: [
+            Variable.withInt(pursuitId),
+            Variable.withInt(_minCountedMs),
+          ],
+          readsFrom: {_db.sessions},
+        )
+        .watch()
+        .map((rows) {
+          final map = <DateTime, Duration>{};
+          for (final row in rows) {
+            final dayStr = row.read<String>('day');
+            final totalMs = row.read<int>('total_ms');
+            final parts = dayStr.split('-');
+            final date = DateTime(
+              int.parse(parts[0]),
+              int.parse(parts[1]),
+              int.parse(parts[2]),
+            );
+            map[date] = Duration(milliseconds: totalMs);
+          }
+          return map;
+        });
+  }
+
   ActiveSession _activeToDomain(ActiveSessionRow row) => ActiveSession(
     pursuitId: row.pursuitId,
     startedAt: row.startedAt.toUtc(),

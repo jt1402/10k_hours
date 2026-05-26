@@ -3,8 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:ten_k_hours/features/pursuits/data/pursuit_providers.dart';
 import 'package:ten_k_hours/features/pursuits/domain/pursuit.dart';
+import 'package:ten_k_hours/features/pursuits/presentation/pursuit_switcher_sheet.dart';
 import 'package:ten_k_hours/features/sessions/data/session_providers.dart';
 import 'package:ten_k_hours/features/sessions/domain/active_session.dart';
 import 'package:ten_k_hours/features/sessions/domain/streaks.dart';
@@ -108,7 +110,32 @@ class _TimerScreenState extends ConsumerState<TimerScreen> {
     _maybeHourBoundaryHaptic(displayElapsed);
 
     return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        title: pursuitAsync.when(
+          data: (p) => p == null
+              ? const Text('—')
+              : _TitleButton(
+                  name: p.name,
+                  onTap: () => showPursuitSwitcher(
+                    context,
+                    currentPursuitId: widget.pursuitId,
+                  ),
+                ),
+          loading: () => const SizedBox.shrink(),
+          error: (_, _) => const Text('Error'),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.calendar_month_rounded),
+            tooltip: 'Heatmap',
+            onPressed: () =>
+                context.push('/pursuit/${widget.pursuitId}/heatmap'),
+          ),
+        ],
+      ),
       body: SafeArea(
+        top: false,
         child: pursuitAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, _) => Center(child: Text('Error: $e')),
@@ -126,6 +153,42 @@ class _TimerScreenState extends ConsumerState<TimerScreen> {
               onLongPress: () => _onLongPress(activeForThis),
             );
           },
+        ),
+      ),
+    );
+  }
+}
+
+class _TitleButton extends StatelessWidget {
+  const _TitleButton({required this.name, required this.onTap});
+  final String name;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(
+              child: Text(
+                name,
+                style: theme.textTheme.titleLarge,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(
+              Icons.expand_more_rounded,
+              size: 22,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ],
         ),
       ),
     );
@@ -170,14 +233,6 @@ class _Body extends StatelessWidget {
 
     return Column(
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-          child: Text(
-            pursuit.name,
-            style: theme.textTheme.headlineSmall,
-            textAlign: TextAlign.center,
-          ),
-        ),
         Expanded(
           child: Center(
             child: GestureDetector(

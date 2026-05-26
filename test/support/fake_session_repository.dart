@@ -77,4 +77,17 @@ class FakeSessionRepository implements SessionRepository {
         )
         .fold<Duration>(Duration.zero, (acc, s) => acc + s.duration);
   }
+
+  @override
+  Stream<Map<DateTime, Duration>> watchDailyTotals(int pursuitId) async* {
+    final map = <DateTime, Duration>{};
+    for (final s in _sessions) {
+      if (s.pursuitId != pursuitId) continue;
+      if (s.duration < const Duration(seconds: 60)) continue;
+      final local = s.startedAt.toLocal();
+      final day = DateTime(local.year, local.month, local.day);
+      map[day] = (map[day] ?? Duration.zero) + s.duration;
+    }
+    yield map;
+  }
 }

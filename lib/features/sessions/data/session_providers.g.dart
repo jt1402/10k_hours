@@ -275,3 +275,80 @@ final class PursuitStreaksFamily extends $Family
   @override
   String toString() => r'pursuitStreaksProvider';
 }
+
+@ProviderFor(dailyTotals)
+final dailyTotalsProvider = DailyTotalsFamily._();
+
+final class DailyTotalsProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<Map<DateTime, Duration>>,
+          Map<DateTime, Duration>,
+          Stream<Map<DateTime, Duration>>
+        >
+    with
+        $FutureModifier<Map<DateTime, Duration>>,
+        $StreamProvider<Map<DateTime, Duration>> {
+  DailyTotalsProvider._({
+    required DailyTotalsFamily super.from,
+    required int super.argument,
+  }) : super(
+         retry: null,
+         name: r'dailyTotalsProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$dailyTotalsHash();
+
+  @override
+  String toString() {
+    return r'dailyTotalsProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $StreamProviderElement<Map<DateTime, Duration>> $createElement(
+    $ProviderPointer pointer,
+  ) => $StreamProviderElement(pointer);
+
+  @override
+  Stream<Map<DateTime, Duration>> create(Ref ref) {
+    final argument = this.argument as int;
+    return dailyTotals(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is DailyTotalsProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$dailyTotalsHash() => r'bf030471dbff1cf1ab802a6bdbb75e82e6a62289';
+
+final class DailyTotalsFamily extends $Family
+    with $FunctionalFamilyOverride<Stream<Map<DateTime, Duration>>, int> {
+  DailyTotalsFamily._()
+    : super(
+        retry: null,
+        name: r'dailyTotalsProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  DailyTotalsProvider call(int pursuitId) =>
+      DailyTotalsProvider._(argument: pursuitId, from: this);
+
+  @override
+  String toString() => r'dailyTotalsProvider';
+}

@@ -46,3 +46,8 @@ Stream<Streaks> pursuitStreaks(Ref ref, int pursuitId) async* {
     );
   }
 }
+
+@riverpod
+Stream<Map<DateTime, Duration>> dailyTotals(Ref ref, int pursuitId) {
+  return ref.watch(sessionRepositoryProvider).watchDailyTotals(pursuitId);
+}

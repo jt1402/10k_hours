@@ -44,6 +44,7 @@ ext_target = project.new_target(
 
 ext_target.build_configurations.each do |config|
   config.build_settings.merge!(
+    'PRODUCT_NAME'                      => '$(TARGET_NAME)',
     'PRODUCT_BUNDLE_IDENTIFIER'         => BUNDLE_ID,
     'INFOPLIST_FILE'                    => "#{EXT_DIR_RELATIVE_TO_IOS}/#{EXT_INFO_PLIST}",
     'IPHONEOS_DEPLOYMENT_TARGET'        => '16.2',

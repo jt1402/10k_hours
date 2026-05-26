@@ -3,7 +3,8 @@
 part of 'app_database.dart';
 
 // ignore_for_file: type=lint
-class $PursuitsTable extends Pursuits with TableInfo<$PursuitsTable, Pursuit> {
+class $PursuitsTable extends Pursuits
+    with TableInfo<$PursuitsTable, PursuitRow> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
@@ -83,7 +84,7 @@ class $PursuitsTable extends Pursuits with TableInfo<$PursuitsTable, Pursuit> {
   static const String $name = 'pursuits';
   @override
   VerificationContext validateIntegrity(
-    Insertable<Pursuit> instance, {
+    Insertable<PursuitRow> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
@@ -133,9 +134,9 @@ class $PursuitsTable extends Pursuits with TableInfo<$PursuitsTable, Pursuit> {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  Pursuit map(Map<String, dynamic> data, {String? tablePrefix}) {
+  PursuitRow map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Pursuit(
+    return PursuitRow(
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}id'],
@@ -165,13 +166,13 @@ class $PursuitsTable extends Pursuits with TableInfo<$PursuitsTable, Pursuit> {
   }
 }
 
-class Pursuit extends DataClass implements Insertable<Pursuit> {
+class PursuitRow extends DataClass implements Insertable<PursuitRow> {
   final int id;
   final String name;
   final int accentColor;
   final int targetHours;
   final DateTime createdAt;
-  const Pursuit({
+  const PursuitRow({
     required this.id,
     required this.name,
     required this.accentColor,
@@ -199,12 +200,12 @@ class Pursuit extends DataClass implements Insertable<Pursuit> {
     );
   }
 
-  factory Pursuit.fromJson(
+  factory PursuitRow.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return Pursuit(
+    return PursuitRow(
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
       accentColor: serializer.fromJson<int>(json['accentColor']),
@@ -224,21 +225,21 @@ class Pursuit extends DataClass implements Insertable<Pursuit> {
     };
   }
 
-  Pursuit copyWith({
+  PursuitRow copyWith({
     int? id,
     String? name,
     int? accentColor,
     int? targetHours,
     DateTime? createdAt,
-  }) => Pursuit(
+  }) => PursuitRow(
     id: id ?? this.id,
     name: name ?? this.name,
     accentColor: accentColor ?? this.accentColor,
     targetHours: targetHours ?? this.targetHours,
     createdAt: createdAt ?? this.createdAt,
   );
-  Pursuit copyWithCompanion(PursuitsCompanion data) {
-    return Pursuit(
+  PursuitRow copyWithCompanion(PursuitsCompanion data) {
+    return PursuitRow(
       id: data.id.present ? data.id.value : this.id,
       name: data.name.present ? data.name.value : this.name,
       accentColor: data.accentColor.present
@@ -253,7 +254,7 @@ class Pursuit extends DataClass implements Insertable<Pursuit> {
 
   @override
   String toString() {
-    return (StringBuffer('Pursuit(')
+    return (StringBuffer('PursuitRow(')
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('accentColor: $accentColor, ')
@@ -269,7 +270,7 @@ class Pursuit extends DataClass implements Insertable<Pursuit> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is Pursuit &&
+      (other is PursuitRow &&
           other.id == this.id &&
           other.name == this.name &&
           other.accentColor == this.accentColor &&
@@ -277,7 +278,7 @@ class Pursuit extends DataClass implements Insertable<Pursuit> {
           other.createdAt == this.createdAt);
 }
 
-class PursuitsCompanion extends UpdateCompanion<Pursuit> {
+class PursuitsCompanion extends UpdateCompanion<PursuitRow> {
   final Value<int> id;
   final Value<String> name;
   final Value<int> accentColor;
@@ -299,7 +300,7 @@ class PursuitsCompanion extends UpdateCompanion<Pursuit> {
   }) : name = Value(name),
        accentColor = Value(accentColor),
        createdAt = Value(createdAt);
-  static Insertable<Pursuit> custom({
+  static Insertable<PursuitRow> custom({
     Expression<int>? id,
     Expression<String>? name,
     Expression<int>? accentColor,
@@ -365,7 +366,8 @@ class PursuitsCompanion extends UpdateCompanion<Pursuit> {
   }
 }
 
-class $SessionsTable extends Sessions with TableInfo<$SessionsTable, Session> {
+class $SessionsTable extends Sessions
+    with TableInfo<$SessionsTable, SessionRow> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
@@ -445,7 +447,7 @@ class $SessionsTable extends Sessions with TableInfo<$SessionsTable, Session> {
   static const String $name = 'sessions';
   @override
   VerificationContext validateIntegrity(
-    Insertable<Session> instance, {
+    Insertable<SessionRow> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
@@ -491,9 +493,9 @@ class $SessionsTable extends Sessions with TableInfo<$SessionsTable, Session> {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  Session map(Map<String, dynamic> data, {String? tablePrefix}) {
+  SessionRow map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Session(
+    return SessionRow(
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}id'],
@@ -523,13 +525,13 @@ class $SessionsTable extends Sessions with TableInfo<$SessionsTable, Session> {
   }
 }
 
-class Session extends DataClass implements Insertable<Session> {
+class SessionRow extends DataClass implements Insertable<SessionRow> {
   final int id;
   final int pursuitId;
   final DateTime startedAt;
   final DateTime endedAt;
   final int durationMs;
-  const Session({
+  const SessionRow({
     required this.id,
     required this.pursuitId,
     required this.startedAt,
@@ -557,12 +559,12 @@ class Session extends DataClass implements Insertable<Session> {
     );
   }
 
-  factory Session.fromJson(
+  factory SessionRow.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return Session(
+    return SessionRow(
       id: serializer.fromJson<int>(json['id']),
       pursuitId: serializer.fromJson<int>(json['pursuitId']),
       startedAt: serializer.fromJson<DateTime>(json['startedAt']),
@@ -582,21 +584,21 @@ class Session extends DataClass implements Insertable<Session> {
     };
   }
 
-  Session copyWith({
+  SessionRow copyWith({
     int? id,
     int? pursuitId,
     DateTime? startedAt,
     DateTime? endedAt,
     int? durationMs,
-  }) => Session(
+  }) => SessionRow(
     id: id ?? this.id,
     pursuitId: pursuitId ?? this.pursuitId,
     startedAt: startedAt ?? this.startedAt,
     endedAt: endedAt ?? this.endedAt,
     durationMs: durationMs ?? this.durationMs,
   );
-  Session copyWithCompanion(SessionsCompanion data) {
-    return Session(
+  SessionRow copyWithCompanion(SessionsCompanion data) {
+    return SessionRow(
       id: data.id.present ? data.id.value : this.id,
       pursuitId: data.pursuitId.present ? data.pursuitId.value : this.pursuitId,
       startedAt: data.startedAt.present ? data.startedAt.value : this.startedAt,
@@ -609,7 +611,7 @@ class Session extends DataClass implements Insertable<Session> {
 
   @override
   String toString() {
-    return (StringBuffer('Session(')
+    return (StringBuffer('SessionRow(')
           ..write('id: $id, ')
           ..write('pursuitId: $pursuitId, ')
           ..write('startedAt: $startedAt, ')
@@ -625,7 +627,7 @@ class Session extends DataClass implements Insertable<Session> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is Session &&
+      (other is SessionRow &&
           other.id == this.id &&
           other.pursuitId == this.pursuitId &&
           other.startedAt == this.startedAt &&
@@ -633,7 +635,7 @@ class Session extends DataClass implements Insertable<Session> {
           other.durationMs == this.durationMs);
 }
 
-class SessionsCompanion extends UpdateCompanion<Session> {
+class SessionsCompanion extends UpdateCompanion<SessionRow> {
   final Value<int> id;
   final Value<int> pursuitId;
   final Value<DateTime> startedAt;
@@ -656,7 +658,7 @@ class SessionsCompanion extends UpdateCompanion<Session> {
        startedAt = Value(startedAt),
        endedAt = Value(endedAt),
        durationMs = Value(durationMs);
-  static Insertable<Session> custom({
+  static Insertable<SessionRow> custom({
     Expression<int>? id,
     Expression<int>? pursuitId,
     Expression<DateTime>? startedAt,
@@ -1140,12 +1142,11 @@ typedef $$PursuitsTableUpdateCompanionBuilder =
     });
 
 final class $$PursuitsTableReferences
-    extends BaseReferences<_$AppDatabase, $PursuitsTable, Pursuit> {
+    extends BaseReferences<_$AppDatabase, $PursuitsTable, PursuitRow> {
   $$PursuitsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static MultiTypedResultKey<$SessionsTable, List<Session>> _sessionsRefsTable(
-    _$AppDatabase db,
-  ) => MultiTypedResultKey.fromTable(
+  static MultiTypedResultKey<$SessionsTable, List<SessionRow>>
+  _sessionsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
     db.sessions,
     aliasName: $_aliasNameGenerator(db.pursuits.id, db.sessions.pursuitId),
   );
@@ -1385,14 +1386,14 @@ class $$PursuitsTableTableManager
         RootTableManager<
           _$AppDatabase,
           $PursuitsTable,
-          Pursuit,
+          PursuitRow,
           $$PursuitsTableFilterComposer,
           $$PursuitsTableOrderingComposer,
           $$PursuitsTableAnnotationComposer,
           $$PursuitsTableCreateCompanionBuilder,
           $$PursuitsTableUpdateCompanionBuilder,
-          (Pursuit, $$PursuitsTableReferences),
-          Pursuit,
+          (PursuitRow, $$PursuitsTableReferences),
+          PursuitRow,
           PrefetchHooks Function({bool sessionsRefs, bool activeSessionRefs})
         > {
   $$PursuitsTableTableManager(_$AppDatabase db, $PursuitsTable table)
@@ -1455,9 +1456,9 @@ class $$PursuitsTableTableManager
                     return [
                       if (sessionsRefs)
                         await $_getPrefetchedData<
-                          Pursuit,
+                          PursuitRow,
                           $PursuitsTable,
-                          Session
+                          SessionRow
                         >(
                           currentTable: table,
                           referencedTable: $$PursuitsTableReferences
@@ -1476,7 +1477,7 @@ class $$PursuitsTableTableManager
                         ),
                       if (activeSessionRefs)
                         await $_getPrefetchedData<
-                          Pursuit,
+                          PursuitRow,
                           $PursuitsTable,
                           ActiveSessionRow
                         >(
@@ -1507,14 +1508,14 @@ typedef $$PursuitsTableProcessedTableManager =
     ProcessedTableManager<
       _$AppDatabase,
       $PursuitsTable,
-      Pursuit,
+      PursuitRow,
       $$PursuitsTableFilterComposer,
       $$PursuitsTableOrderingComposer,
       $$PursuitsTableAnnotationComposer,
       $$PursuitsTableCreateCompanionBuilder,
       $$PursuitsTableUpdateCompanionBuilder,
-      (Pursuit, $$PursuitsTableReferences),
-      Pursuit,
+      (PursuitRow, $$PursuitsTableReferences),
+      PursuitRow,
       PrefetchHooks Function({bool sessionsRefs, bool activeSessionRefs})
     >;
 typedef $$SessionsTableCreateCompanionBuilder =
@@ -1535,7 +1536,7 @@ typedef $$SessionsTableUpdateCompanionBuilder =
     });
 
 final class $$SessionsTableReferences
-    extends BaseReferences<_$AppDatabase, $SessionsTable, Session> {
+    extends BaseReferences<_$AppDatabase, $SessionsTable, SessionRow> {
   $$SessionsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static $PursuitsTable _pursuitIdTable(_$AppDatabase db) => db.pursuits
@@ -1714,14 +1715,14 @@ class $$SessionsTableTableManager
         RootTableManager<
           _$AppDatabase,
           $SessionsTable,
-          Session,
+          SessionRow,
           $$SessionsTableFilterComposer,
           $$SessionsTableOrderingComposer,
           $$SessionsTableAnnotationComposer,
           $$SessionsTableCreateCompanionBuilder,
           $$SessionsTableUpdateCompanionBuilder,
-          (Session, $$SessionsTableReferences),
-          Session,
+          (SessionRow, $$SessionsTableReferences),
+          SessionRow,
           PrefetchHooks Function({bool pursuitId})
         > {
   $$SessionsTableTableManager(_$AppDatabase db, $SessionsTable table)
@@ -1820,14 +1821,14 @@ typedef $$SessionsTableProcessedTableManager =
     ProcessedTableManager<
       _$AppDatabase,
       $SessionsTable,
-      Session,
+      SessionRow,
       $$SessionsTableFilterComposer,
       $$SessionsTableOrderingComposer,
       $$SessionsTableAnnotationComposer,
       $$SessionsTableCreateCompanionBuilder,
       $$SessionsTableUpdateCompanionBuilder,
-      (Session, $$SessionsTableReferences),
-      Session,
+      (SessionRow, $$SessionsTableReferences),
+      SessionRow,
       PrefetchHooks Function({bool pursuitId})
     >;
 typedef $$ActiveSessionTableCreateCompanionBuilder =

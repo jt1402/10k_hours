@@ -23,6 +23,7 @@ class TimerScreen extends ConsumerStatefulWidget {
 class _TimerScreenState extends ConsumerState<TimerScreen> {
   Timer? _ticker;
   int _lastWholeHoursElapsed = -1;
+  bool _liveActivityBootstrapped = false;
 
   void _ensureTicker(bool needTicker) {
     if (needTicker && _ticker == null) {
@@ -64,11 +65,13 @@ class _TimerScreenState extends ConsumerState<TimerScreen> {
       unawaited(HapticFeedback.lightImpact());
       final now = DateTime.now().toUtc();
       final elapsed = resumed.elapsedAt(now);
+      // Use start() rather than update() so the Activity is created if it
+      // doesn't exist yet (e.g. on cold-start of a previously-paused session).
       unawaited(
-        live.update(
+        live.start(
+          pursuitName: pursuit.name,
+          pursuitColorARGB: pursuit.accentColor,
           effectiveStartedAt: now.subtract(elapsed),
-          isPaused: false,
-          pausedAtFreezeSeconds: 0,
         ),
       );
     } else {
@@ -104,6 +107,40 @@ class _TimerScreenState extends ConsumerState<TimerScreen> {
     }
   }
 
+  // Cold-start bootstrap: if a session was already running (or paused) when
+  // we cold-launched the app, kick off a Live Activity once we have pursuit
+  // data. Runs at most once per session — resets when the active session
+  // clears.
+  void _maybeBootstrapLiveActivity(ActiveSession? active, Pursuit? pursuit) {
+    if (active == null) {
+      _liveActivityBootstrapped = false;
+      return;
+    }
+    if (_liveActivityBootstrapped) return;
+    if (pursuit == null) return;
+    _liveActivityBootstrapped = true;
+    final live = ref.read(liveActivityServiceProvider);
+    final now = DateTime.now().toUtc();
+    final elapsed = active.elapsedAt(now);
+    final effectiveStart = now.subtract(elapsed);
+    unawaited(
+      live.start(
+        pursuitName: pursuit.name,
+        pursuitColorARGB: pursuit.accentColor,
+        effectiveStartedAt: effectiveStart,
+      ),
+    );
+    if (active.isPaused) {
+      unawaited(
+        live.update(
+          effectiveStartedAt: effectiveStart,
+          isPaused: true,
+          pausedAtFreezeSeconds: elapsed.inSeconds,
+        ),
+      );
+    }
+  }
+
   void _maybeHourBoundaryHaptic(Duration totalElapsed) {
     final hours = totalElapsed.inHours;
     if (_lastWholeHoursElapsed < 0) {
@@ -129,6 +166,7 @@ class _TimerScreenState extends ConsumerState<TimerScreen> {
     final isThisPursuit = active?.pursuitId == widget.pursuitId;
     final activeForThis = isThisPursuit ? active : null;
     _ensureTicker(activeForThis != null && !activeForThis.isPaused);
+    _maybeBootstrapLiveActivity(activeForThis, pursuitAsync.value);
 
     final currentElapsed = _currentSessionElapsed(activeForThis);
     final totalCounted = totalAsync.value ?? Duration.zero;

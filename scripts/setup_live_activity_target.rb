@@ -61,6 +61,10 @@ ext_target.build_configurations.each do |config|
     'CLANG_CXX_LANGUAGE_STANDARD'       => 'gnu++20',
     'ENABLE_PREVIEWS'                   => 'YES',
   )
+  # SwiftUI previews require -Onone in Debug. Release/Profile use the default -O.
+  if config.name == 'Debug'
+    config.build_settings['SWIFT_OPTIMIZATION_LEVEL'] = '-Onone'
+  end
 end
 
 # ── Create the extension's group under the main project group ────────────────
@@ -102,8 +106,23 @@ end
 build_file = embed_phase.add_file_reference(ext_target.product_reference, true)
 build_file.settings = { 'ATTRIBUTES' => ['RemoveHeadersOnCopy'] }
 
-# ── Runner depends on the extension target ───────────────────────────────────
-runner_target.add_dependency(ext_target)
+# The Embed App Extensions phase must run BEFORE Flutter's "Thin Binary"
+# script phase, otherwise xcodebuild reports a dependency cycle between the
+# .appex copy and Thin Binary's outputs.
+thin_phase = runner_target.build_phases.find do |p|
+  p.is_a?(Xcodeproj::Project::Object::PBXShellScriptBuildPhase) &&
+    p.display_name == 'Thin Binary'
+end
+if thin_phase
+  runner_target.build_phases.delete(embed_phase)
+  thin_idx = runner_target.build_phases.index(thin_phase)
+  runner_target.build_phases.insert(thin_idx, embed_phase)
+end
+
+# NOTE: do NOT add an explicit Runner → Extension dependency. The Embed App
+# Extensions copy-files phase creates an implicit dependency. Adding an
+# explicit one on top causes an "xcodebuild Cycle inside Runner" error
+# because the shared Attributes source file appears in both targets.
 
 project.save
 puts "[ok] added #{TARGET_NAME} target (bundle id #{BUNDLE_ID})"

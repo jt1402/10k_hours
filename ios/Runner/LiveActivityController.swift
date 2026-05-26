@@ -12,12 +12,19 @@ final class LiveActivityController {
     pursuitColorARGB: Int,
     effectiveStartedAt: Date
   ) {
-    guard ActivityAuthorizationInfo().areActivitiesEnabled else { return }
-    // Single-activity invariant: end any previous activity first.
-    if let existing = activity {
-      Task { await existing.end(nil, dismissalPolicy: .immediate) }
-      activity = nil
+    NSLog("[LiveActivity] start called for \(pursuitName)")
+    guard ActivityAuthorizationInfo().areActivitiesEnabled else {
+      NSLog("[LiveActivity] areActivitiesEnabled=false — bailing")
+      return
     }
+    // Single-activity invariant: end any previous activity first.
+    // Also catches orphans owned by the OS but not tracked in-process
+    // (e.g. after app reinstall while a previous activity was live).
+    let orphans = Activity<TenKHoursLiveActivityAttributes>.activities
+    for orphan in orphans {
+      Task { await orphan.end(nil, dismissalPolicy: .immediate) }
+    }
+    activity = nil
     let attrs = TenKHoursLiveActivityAttributes(
       pursuitName: pursuitName,
       pursuitColorARGB: pursuitColorARGB
@@ -34,8 +41,9 @@ final class LiveActivityController {
         content: content,
         pushType: nil
       )
+      NSLog("[LiveActivity] started, id=\(activity?.id ?? "nil")")
     } catch {
-      NSLog("LiveActivityController.start failed: \(error)")
+      NSLog("[LiveActivity] start failed: \(error)")
     }
   }
 

@@ -71,8 +71,13 @@ struct PursuitSwitcherSheet: View {
       }
     }
     .disabled(switchDisabled)
-    .swipeActions(edge: .trailing) {
-      Button(role: .destructive) { requestDelete(pursuit) } label: { Label("Delete", systemImage: "trash") }
+    // No `.destructive` role / no full-swipe: a destructive swipe action animates
+    // the row away immediately, but we defer the actual delete to the confirm
+    // alert — so the row would vanish then pop back. Plain (red-tinted) button:
+    // the row stays until the alert is confirmed, which then deletes it.
+    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+      Button { requestDelete(pursuit) } label: { Label("Delete", systemImage: "trash") }
+        .tint(.red)
     }
   }
 

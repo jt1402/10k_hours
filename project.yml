@@ -1,0 +1,78 @@
+name: TenKHours
+options:
+  bundleIdPrefix: io.tenkhours
+  deploymentTarget:
+    iOS: "18.0"
+  createIntermediateGroups: true
+  groupSortPosition: top
+settings:
+  base:
+    DEVELOPMENT_TEAM: "4NC3JC88D4"
+    SWIFT_VERSION: "6.0"
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    CODE_SIGN_STYLE: Automatic
+    TARGETED_DEVICE_FAMILY: "1"
+    SWIFT_EMIT_LOC_STRINGS: YES
+targets:
+  TenKHours:
+    type: application
+    platform: iOS
+    sources:
+      - path: Sources
+      - path: Shared
+    info:
+      path: Support/App-Info.plist
+      properties:
+        CFBundleDisplayName: 10k Hours
+        UILaunchScreen: {}
+        NSSupportsLiveActivities: true
+        NSAlarmKitUsageDescription: Alerts you the moment a pursuit reaches its goal, even when the app is in the background.
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        UIRequiresFullScreen: true
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: io.tenkhours
+        ENABLE_PREVIEWS: YES
+    dependencies:
+      - target: TenKHoursWidgetExtension
+  TenKHoursWidgetExtension:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: Widget
+      - path: Shared
+    info:
+      path: Support/Widget-Info.plist
+      properties:
+        CFBundleDisplayName: 10k Hours
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: io.tenkhours.Widget
+        ENABLE_PREVIEWS: YES
+  TenKHoursTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: Tests
+    dependencies:
+      - target: TenKHours
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: io.tenkhours.Tests
+        GENERATE_INFOPLIST_FILE: YES
+schemes:
+  TenKHours:
+    build:
+      targets:
+        TenKHours: all
+    test:
+      targets:
+        - TenKHoursTests
+    run:
+      config: Debug

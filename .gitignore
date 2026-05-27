@@ -1,0 +1,21 @@
+# macOS
+.DS_Store
+
+# Xcode / build
+DerivedData/
+build/
+*.xcuserstate
+xcuserdata/
+*.xcscmblueprint
+*.xccheckout
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# XcodeGen generates these from project.yml (the source of truth).
+# Run `xcodegen generate` after cloning. See PROGRESS.md → "How to build".
+TenKHours.xcodeproj/
+Support/App-Info.plist
+Support/Widget-Info.plist

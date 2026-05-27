@@ -6,6 +6,8 @@
 	<true/>
 	<key>NSSupportsLiveActivities</key>
 	<true/>
+	<key>NSAlarmKitUsageDescription</key>
+	<string>Alerts you the moment a pursuit reaches its goal, even when the app is in the background.</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>

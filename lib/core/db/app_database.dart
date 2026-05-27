@@ -19,7 +19,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.memory() : super(NativeDatabase.memory());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -34,6 +34,26 @@ class AppDatabase extends _$AppDatabase {
         await customStatement(
           'UPDATE pursuits SET target_minutes = target_minutes * 60',
         );
+      }
+      if (from < 3) {
+        // v3: add completed_at, backfill for pursuits already past target
+        // (using counted sessions >= 60s, mirroring totalCountedDurationFor).
+        await m.addColumn(pursuits, pursuits.completedAt);
+        await customStatement('''
+          UPDATE pursuits
+          SET completed_at = (
+            SELECT MAX(s.ended_at)
+            FROM sessions s
+            WHERE s.pursuit_id = pursuits.id
+              AND s.duration_ms >= 60000
+          )
+          WHERE (
+            SELECT COALESCE(SUM(s.duration_ms), 0)
+            FROM sessions s
+            WHERE s.pursuit_id = pursuits.id
+              AND s.duration_ms >= 60000
+          ) >= (target_minutes * 60 * 1000)
+        ''');
       }
     },
   );

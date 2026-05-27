@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:ten_k_hours/features/pursuits/data/pursuit_providers.dart';
 import 'package:ten_k_hours/features/pursuits/domain/pursuit.dart';
+import 'package:ten_k_hours/features/pursuits/presentation/pursuit_completion_sheet.dart';
 import 'package:ten_k_hours/features/pursuits/presentation/pursuit_switcher_sheet.dart';
 import 'package:ten_k_hours/features/sessions/data/session_providers.dart';
 import 'package:ten_k_hours/features/sessions/domain/active_session.dart';
@@ -22,12 +23,30 @@ class TimerScreen extends ConsumerStatefulWidget {
   ConsumerState<TimerScreen> createState() => _TimerScreenState();
 }
 
-class _TimerScreenState extends ConsumerState<TimerScreen> {
+class _TimerScreenState extends ConsumerState<TimerScreen>
+    with WidgetsBindingObserver {
   Timer? _ticker;
   int _lastWholeHoursElapsed = -1;
   bool _liveActivityBootstrapped = false;
   String? _lastAdaptivePushed;
   DateTime? _lastAdaptivePushAt;
+  bool _celebrationFired = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && mounted) {
+      // After backgrounded interval (lock screen, app switcher) the session
+      // may have crossed the target. Force a check on resume regardless of
+      // provider/build timing.
+      unawaited(_checkPostActionCompletion());
+    }
+  }
 
   void _ensureTicker(bool needTicker) {
     if (needTicker && _ticker == null) {
@@ -35,6 +54,7 @@ class _TimerScreenState extends ConsumerState<TimerScreen> {
         if (mounted) {
           setState(() {});
           _maybePushAdaptiveDisplay();
+          unawaited(_checkPostActionCompletion());
         }
       });
     } else if (!needTicker && _ticker != null) {
@@ -86,6 +106,7 @@ class _TimerScreenState extends ConsumerState<TimerScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _ticker?.cancel();
     super.dispose();
   }
@@ -95,19 +116,56 @@ class _TimerScreenState extends ConsumerState<TimerScreen> {
     return active.elapsedAt(DateTime.now().toUtc());
   }
 
+  // Wall-clock instant the cumulative target is reached, given the live
+  // activity's synthetic [effectiveStart]. The native timer is bounded to this
+  // so it freezes at the goal instead of overshooting while backgrounded.
+  // Null when the target is already met (no clamp — timer ticks unbounded).
+  Future<DateTime?> _liveTargetEndAt(
+    Pursuit pursuit,
+    DateTime effectiveStart,
+  ) async {
+    final prior = await ref
+        .read(sessionRepositoryProvider)
+        .totalCountedDurationFor(pursuit.id);
+    final remaining = Duration(minutes: pursuit.targetMinutes) - prior;
+    if (remaining <= Duration.zero) return null;
+    return effectiveStart.add(remaining);
+  }
+
+  // Schedule (or clear) the AlarmKit goal alarm to mirror the live activity's
+  // target. Fires a system alarm at [targetEndAt] so the goal is announced
+  // live even while the app is suspended (iOS 26+; no-op otherwise).
+  void _syncGoalAlarm(Pursuit pursuit, DateTime? targetEndAt) {
+    final alarm = ref.read(alarmServiceProvider);
+    if (targetEndAt == null) {
+      unawaited(alarm.cancel());
+    } else {
+      unawaited(
+        alarm.schedule(
+          at: targetEndAt,
+          pursuitName: pursuit.name,
+          pursuitColorARGB: pursuit.accentColor,
+        ),
+      );
+    }
+  }
+
   Future<void> _onTap(ActiveSession? active, Pursuit pursuit) async {
     final service = ref.read(sessionServiceProvider);
     final live = ref.read(liveActivityServiceProvider);
     if (active == null) {
       final started = await service.start(widget.pursuitId);
       unawaited(HapticFeedback.lightImpact());
+      final targetEndAt = await _liveTargetEndAt(pursuit, started.startedAt);
       unawaited(
         live.start(
           pursuitName: pursuit.name,
           pursuitColorARGB: pursuit.accentColor,
           effectiveStartedAt: started.startedAt,
+          targetEndAt: targetEndAt,
         ),
       );
+      _syncGoalAlarm(pursuit, targetEndAt);
     } else if (active.isPaused) {
       final resumed = await service.resume();
       unawaited(HapticFeedback.lightImpact());
@@ -116,14 +174,18 @@ class _TimerScreenState extends ConsumerState<TimerScreen> {
       // Use start() rather than update() so the Activity is created if it
       // doesn't exist yet (e.g. on cold-start of a previously-paused session).
       final initialText = _adaptiveDisplay(elapsed);
+      final effectiveStart = now.subtract(elapsed);
+      final targetEndAt = await _liveTargetEndAt(pursuit, effectiveStart);
       unawaited(
         live.start(
           pursuitName: pursuit.name,
           pursuitColorARGB: pursuit.accentColor,
-          effectiveStartedAt: now.subtract(elapsed),
+          effectiveStartedAt: effectiveStart,
           displayText: initialText,
+          targetEndAt: targetEndAt,
         ),
       );
+      _syncGoalAlarm(pursuit, targetEndAt);
       _lastAdaptivePushed = initialText;
       _lastAdaptivePushAt = initialText == null ? null : DateTime.now();
     } else {
@@ -137,8 +199,11 @@ class _TimerScreenState extends ConsumerState<TimerScreen> {
           pausedAtFreezeSeconds: elapsed.inSeconds,
         ),
       );
+      // Paused: the goal time is now indefinite, so drop the scheduled alarm.
+      unawaited(ref.read(alarmServiceProvider).cancel());
       _lastAdaptivePushed = null;
       _lastAdaptivePushAt = null;
+      await _checkPostActionCompletion();
     }
   }
 
@@ -149,6 +214,7 @@ class _TimerScreenState extends ConsumerState<TimerScreen> {
     final result = await service.stop();
     unawaited(HapticFeedback.mediumImpact());
     unawaited(live.end());
+    unawaited(ref.read(alarmServiceProvider).cancel());
     _lastWholeHoursElapsed = -1;
     _lastAdaptivePushed = null;
     _lastAdaptivePushAt = null;
@@ -161,13 +227,41 @@ class _TimerScreenState extends ConsumerState<TimerScreen> {
         ),
       );
     }
+    await _checkPostActionCompletion();
+  }
+
+  // Re-check whether cumulative covered (counted past sessions + current
+  // active session if any) has crossed the target. Called from multiple
+  // hooks (ticker, stop, pause, app resume) so background completions
+  // don't slip through.
+  Future<void> _checkPostActionCompletion() async {
+    if (_celebrationFired) return;
+    final pursuit = await ref.read(
+      pursuitByIdProvider(widget.pursuitId).future,
+    );
+    if (pursuit == null || pursuit.completedAt != null) return;
+    final total = await ref
+        .read(sessionRepositoryProvider)
+        .totalCountedDurationFor(widget.pursuitId);
+    final active = ref.read(activeSessionProvider).value;
+    final activeElapsed =
+        (active != null && active.pursuitId == widget.pursuitId)
+        ? active.elapsedAt(DateTime.now().toUtc())
+        : Duration.zero;
+    final cumulative = total + activeElapsed;
+    if (cumulative < Duration(minutes: pursuit.targetMinutes)) return;
+    _celebrationFired = true;
+    await _fireCompletion(pursuit);
   }
 
   // Cold-start bootstrap: if a session was already running (or paused) when
   // we cold-launched the app, kick off a Live Activity once we have pursuit
   // data. Runs at most once per session — resets when the active session
   // clears.
-  void _maybeBootstrapLiveActivity(ActiveSession? active, Pursuit? pursuit) {
+  Future<void> _maybeBootstrapLiveActivity(
+    ActiveSession? active,
+    Pursuit? pursuit,
+  ) async {
     if (active == null) {
       _liveActivityBootstrapped = false;
       return;
@@ -180,12 +274,14 @@ class _TimerScreenState extends ConsumerState<TimerScreen> {
     final elapsed = active.elapsedAt(now);
     final effectiveStart = now.subtract(elapsed);
     final initialText = active.isPaused ? null : _adaptiveDisplay(elapsed);
+    final targetEndAt = await _liveTargetEndAt(pursuit, effectiveStart);
     unawaited(
       live.start(
         pursuitName: pursuit.name,
         pursuitColorARGB: pursuit.accentColor,
         effectiveStartedAt: effectiveStart,
         displayText: initialText,
+        targetEndAt: targetEndAt,
       ),
     );
     _lastAdaptivePushed = initialText;
@@ -198,6 +294,9 @@ class _TimerScreenState extends ConsumerState<TimerScreen> {
           pausedAtFreezeSeconds: elapsed.inSeconds,
         ),
       );
+      unawaited(ref.read(alarmServiceProvider).cancel());
+    } else {
+      _syncGoalAlarm(pursuit, targetEndAt);
     }
   }
 
@@ -210,6 +309,74 @@ class _TimerScreenState extends ConsumerState<TimerScreen> {
     if (hours > _lastWholeHoursElapsed) {
       _lastWholeHoursElapsed = hours;
       unawaited(HapticFeedback.heavyImpact());
+    }
+  }
+
+  // Fire-once detection: when displayElapsed crosses the target while the
+  // pursuit isn't already marked completed, end the active session, mark the
+  // pursuit, and show the celebration sheet.
+  void _maybeCelebrateCompletion({
+    required Pursuit pursuit,
+    required Duration displayElapsed,
+  }) {
+    if (_celebrationFired) return;
+    if (pursuit.completedAt != null) return;
+    if (displayElapsed < Duration(minutes: pursuit.targetMinutes)) return;
+    _celebrationFired = true;
+    // Defer until after build completes — we can't call showModalBottomSheet
+    // during a build phase.
+    unawaited(Future.microtask(() => _fireCompletion(pursuit)));
+  }
+
+  Future<void> _fireCompletion(Pursuit pursuit) async {
+    try {
+      final service = ref.read(sessionServiceProvider);
+      final live = ref.read(liveActivityServiceProvider);
+      final repo = ref.read(pursuitRepositoryProvider);
+      final sessionRepo = ref.read(sessionRepositoryProvider);
+      final active = ref.read(activeSessionProvider).value;
+      final now = DateTime.now().toUtc();
+      var completedAt = now;
+      if (active != null && active.pursuitId == pursuit.id) {
+        // The ticker can't fire while backgrounded, so completion may only be
+        // detected on resume — well past the target. Record the session as
+        // ending at the exact crossing moment so the background overshoot
+        // isn't banked: only the part up to the target counts toward the goal.
+        final priorCounted = await sessionRepo.totalCountedDurationFor(
+          pursuit.id,
+        );
+        final endAt =
+            active.completionEndAt(
+              priorCounted: priorCounted,
+              target: Duration(minutes: pursuit.targetMinutes),
+              now: now,
+            ) ??
+            now;
+        completedAt = endAt;
+        try {
+          await service.stop(endAt: endAt);
+        } on Object catch (e) {
+          debugPrint('[completion] service.stop failed: $e');
+        }
+        unawaited(live.end(finished: true));
+        // The goal alarm has served its purpose (or already fired); clear any
+        // still-pending one so it doesn't ring after we've handled completion.
+        unawaited(ref.read(alarmServiceProvider).cancel());
+        _lastAdaptivePushed = null;
+        _lastAdaptivePushAt = null;
+      }
+      await repo.markCompleted(pursuit.id, completedAt);
+      // Force the pursuit provider to re-read so completedAt propagates.
+      ref.invalidate(pursuitByIdProvider(pursuit.id));
+      unawaited(HapticFeedback.heavyImpact());
+      if (!mounted) return;
+      final fresh = await repo.getById(pursuit.id);
+      if (!mounted || fresh == null) return;
+      await showPursuitCompletionSheet(context, pursuit: fresh);
+    } on Object catch (e, st) {
+      debugPrint('[completion] _fireCompletion failed: $e\n$st');
+      // Allow another attempt if it errored out.
+      _celebrationFired = false;
     }
   }
 
@@ -226,13 +393,22 @@ class _TimerScreenState extends ConsumerState<TimerScreen> {
     final isThisPursuit = active?.pursuitId == widget.pursuitId;
     final activeForThis = isThisPursuit ? active : null;
     _ensureTicker(activeForThis != null && !activeForThis.isPaused);
-    _maybeBootstrapLiveActivity(activeForThis, pursuitAsync.value);
+    unawaited(_maybeBootstrapLiveActivity(activeForThis, pursuitAsync.value));
 
     final currentElapsed = _currentSessionElapsed(activeForThis);
     final totalCounted = totalAsync.value ?? Duration.zero;
     final displayElapsed = totalCounted + currentElapsed;
 
     _maybeHourBoundaryHaptic(displayElapsed);
+    final pursuitForCheck = pursuitAsync.value;
+    if (pursuitForCheck != null) {
+      // Reset the once-flag if the user opens a different pursuit instance.
+      if (pursuitForCheck.completedAt != null) _celebrationFired = true;
+      _maybeCelebrateCompletion(
+        pursuit: pursuitForCheck,
+        displayElapsed: displayElapsed,
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -276,6 +452,8 @@ class _TimerScreenState extends ConsumerState<TimerScreen> {
               streaks: streaksAsync.value ?? Streaks.empty,
               onTap: () => _onTap(activeForThis, pursuit),
               onLongPress: () => _onLongPress(activeForThis),
+              onShowResults: () =>
+                  showPursuitCompletionSheet(context, pursuit: pursuit),
             );
           },
         ),
@@ -329,6 +507,7 @@ class _Body extends StatelessWidget {
     required this.streaks,
     required this.onTap,
     required this.onLongPress,
+    required this.onShowResults,
   });
 
   final Pursuit pursuit;
@@ -338,6 +517,7 @@ class _Body extends StatelessWidget {
   final Streaks streaks;
   final VoidCallback onTap;
   final VoidCallback onLongPress;
+  final VoidCallback onShowResults;
 
   String _formatHms(Duration d) {
     final h = d.inHours.toString().padLeft(2, '0');
@@ -350,7 +530,10 @@ class _Body extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final accent = Color(pursuit.accentColor);
-    final status = active == null
+    final isCompleted = pursuit.completedAt != null;
+    final status = isCompleted
+        ? 'Goal reached — this pursuit is complete'
+        : active == null
         ? 'tap to start'
         : active!.isPaused
         ? 'paused — tap to resume, hold to stop'
@@ -365,14 +548,15 @@ class _Body extends StatelessWidget {
               children: [
                 GestureDetector(
                   behavior: HitTestBehavior.opaque,
-                  onTap: onTap,
-                  onLongPress: onLongPress,
+                  onTap: isCompleted ? null : onTap,
+                  onLongPress: isCompleted ? null : onLongPress,
                   child: Semantics(
-                    button: true,
+                    button: !isCompleted,
                     child: RingWidget(
                       elapsed: displayElapsed,
                       targetMinutes: pursuit.targetMinutes,
                       accent: accent,
+                      completed: isCompleted,
                       size: 340,
                     ),
                   ),
@@ -393,9 +577,13 @@ class _Body extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           child: Column(
             children: [
-              if (streaks.currentDays > 0 || streaks.longestDays > 0)
+              if (isCompleted)
+                _ResultsButton(onTap: onShowResults, accent: accent)
+              else if (streaks.currentDays > 0 || streaks.longestDays > 0)
                 _StreakStrip(streaks: streaks),
-              if (streaks.currentDays > 0 || streaks.longestDays > 0)
+              if (isCompleted ||
+                  streaks.currentDays > 0 ||
+                  streaks.longestDays > 0)
                 const SizedBox(height: 12),
               if (active != null)
                 Text(
@@ -459,6 +647,26 @@ class _StreakStrip extends StatelessWidget {
   }
 }
 
+class _ResultsButton extends StatelessWidget {
+  const _ResultsButton({required this.onTap, required this.accent});
+  final VoidCallback onTap;
+  final Color accent;
+
+  @override
+  Widget build(BuildContext context) {
+    return FilledButton.icon(
+      onPressed: onTap,
+      icon: const Icon(Icons.emoji_events_rounded, size: 18),
+      label: const Text('Results'),
+      style: FilledButton.styleFrom(
+        backgroundColor: accent,
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      ),
+    );
+  }
+}
+
 class _StatsRow extends StatelessWidget {
   const _StatsRow({required this.covered, required this.targetMinutes});
 
@@ -475,7 +683,8 @@ class _StatsRow extends StatelessWidget {
     final m = d.inMinutes % 60;
     final s = d.inSeconds % 60;
     final hs = h >= 1000 ? NumberFormat('#,##0').format(h) : h.toString();
-    return '$hs:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+    return '$hs:${m.toString().padLeft(2, '0')}:'
+        '${s.toString().padLeft(2, '0')}';
   }
 
   @override

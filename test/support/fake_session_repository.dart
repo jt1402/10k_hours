@@ -68,6 +68,10 @@ class FakeSessionRepository implements SessionRepository {
   }
 
   @override
+  Future<int> countFor(int pursuitId) async =>
+      _sessions.where((s) => s.pursuitId == pursuitId).length;
+
+  @override
   Future<Duration> totalCountedDurationFor(int pursuitId) async {
     return _sessions
         .where(

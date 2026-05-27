@@ -22,4 +22,22 @@ abstract class ActiveSession with _$ActiveSession {
     final raw = now.difference(startedAt) - pausedTotal - activePauseSoFar;
     return raw.isNegative ? Duration.zero : raw;
   }
+
+  // The instant this session should be recorded as ending so cumulative
+  // covered time lands exactly on [target], never banking a background
+  // overshoot. [priorCounted] is the counted duration from *other* completed
+  // sessions for the pursuit. Returns null when no clamp applies — paused, the
+  // target was already met before this session, or the crossing isn't in the
+  // past at [now] (caller should just use [now] then).
+  DateTime? completionEndAt({
+    required Duration priorCounted,
+    required Duration target,
+    required DateTime now,
+  }) {
+    if (isPaused) return null;
+    final remaining = target - priorCounted;
+    if (remaining <= Duration.zero) return null;
+    final crossing = startedAt.add(pausedTotal).add(remaining);
+    return crossing.isBefore(now) ? crossing : null;
+  }
 }

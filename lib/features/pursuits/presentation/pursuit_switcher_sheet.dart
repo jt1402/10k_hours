@@ -161,7 +161,7 @@ class _PursuitList extends ConsumerWidget {
           final p = pursuits[i];
           final isCurrent = p.id == currentPursuitId;
           final isActiveOnThis = active?.pursuitId == p.id;
-          // Disable switching when active session belongs to a different pursuit.
+          // Disable when a session is active on a different pursuit.
           final switchDisabled = active != null && !isActiveOnThis;
           final accent = Color(p.accentColor);
           return Dismissible(
@@ -241,10 +241,11 @@ class _PursuitList extends ConsumerWidget {
               title: Text('Delete ${pursuit.name}?'),
               content: Text(
                 count == 0
-                    ? 'This pursuit has no recorded sessions. This cannot be undone.'
+                    ? 'This pursuit has no recorded sessions. '
+                          'This cannot be undone.'
                     : '$count session${count == 1 ? '' : 's'} '
-                          '(${_formatDuration(total)} of practice) will be permanently deleted. '
-                          'This cannot be undone.',
+                          '(${_formatDuration(total)} of practice) '
+                          'will be permanently deleted. This cannot be undone.',
               ),
               actions: [
                 TextButton(

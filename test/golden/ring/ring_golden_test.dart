@@ -21,7 +21,7 @@ void main() {
         _harness(
           const RingWidget(
             elapsed: Duration.zero,
-            targetHours: kDefaultTargetHours,
+            targetMinutes: kDefaultTargetMinutes,
             accent: kDefaultAccentColor,
           ),
         ),
@@ -37,7 +37,7 @@ void main() {
         _harness(
           const RingWidget(
             elapsed: Duration(hours: 4700),
-            targetHours: kDefaultTargetHours,
+            targetMinutes: kDefaultTargetMinutes,
             accent: kDefaultAccentColor,
           ),
         ),
@@ -53,7 +53,7 @@ void main() {
         _harness(
           const RingWidget(
             elapsed: Duration(hours: 10000),
-            targetHours: kDefaultTargetHours,
+            targetMinutes: kDefaultTargetMinutes,
             accent: kDefaultAccentColor,
           ),
         ),

@@ -57,10 +57,13 @@ class SessionService {
     return resumed;
   }
 
-  Future<StopResult> stop() async {
+  // [endAt] lets a caller record the session as ending at a specific moment
+  // rather than now — used by goal completion to bank only up to the target
+  // crossing instead of a background overshoot. Must not be after now.
+  Future<StopResult> stop({DateTime? endAt}) async {
     final active = await repo.getActive();
     if (active == null) throw const NoActiveSessionError();
-    final endedAt = clock.now();
+    final endedAt = endAt ?? clock.now();
     final duration = active.elapsedAt(endedAt);
     final session = await repo.insertCompleted(
       pursuitId: active.pursuitId,

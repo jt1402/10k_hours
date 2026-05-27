@@ -20,6 +20,7 @@ class LiveActivityService {
     required int pursuitColorARGB,
     required DateTime effectiveStartedAt,
     String? displayText,
+    DateTime? targetEndAt,
   }) async {
     if (!isSupported) return;
     try {
@@ -27,7 +28,8 @@ class LiveActivityService {
         'pursuitName': pursuitName,
         'pursuitColorARGB': pursuitColorARGB,
         'effectiveStartedAtMs': effectiveStartedAt.millisecondsSinceEpoch,
-        if (displayText != null) 'displayText': displayText,
+        'displayText': ?displayText,
+        'targetEndAtMs': ?targetEndAt?.millisecondsSinceEpoch,
       });
     } on Object catch (_) {
       // intentionally swallowed — Live Activity is non-critical UX
@@ -46,17 +48,20 @@ class LiveActivityService {
         'effectiveStartedAtMs': effectiveStartedAt.millisecondsSinceEpoch,
         'isPaused': isPaused,
         'pausedAtFreezeSeconds': pausedAtFreezeSeconds,
-        if (displayText != null) 'displayText': displayText,
+        'displayText': ?displayText,
       });
     } on Object catch (_) {
       // intentionally swallowed — Live Activity is non-critical UX
     }
   }
 
-  Future<void> end() async {
+  // [finished] true when the pursuit's goal was reached, so the activity ends
+  // with a "Finished" card that lingers on the lock screen; a manual stop
+  // dismisses it immediately.
+  Future<void> end({bool finished = false}) async {
     if (!isSupported) return;
     try {
-      await _channel.invokeMethod<void>('end');
+      await _channel.invokeMethod<void>('end', {'finished': finished});
     } on Object catch (_) {
       // intentionally swallowed — Live Activity is non-critical UX
     }

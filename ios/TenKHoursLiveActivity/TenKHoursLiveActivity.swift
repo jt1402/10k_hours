@@ -9,13 +9,16 @@ struct TenKHoursLiveActivity: Widget {
       LockScreenView(context: context)
     } dynamicIsland: { context in
       let accent = colorFromARGB(context.attributes.pursuitColorARGB)
+      // Goal reached: flips automatically via staleDate while backgrounded,
+      // and stays set on the final content of the ended (lingering) card.
+      let finished = context.isStale || context.state.isFinished
       return DynamicIsland {
         DynamicIslandExpandedRegion(.leading) {
           VStack(alignment: .leading, spacing: 2) {
             Text(context.attributes.pursuitName)
               .font(.subheadline.weight(.semibold))
               .lineLimit(1)
-            Text(context.state.isPaused ? "Paused" : "Running")
+            Text(finished ? "Finished" : (context.state.isPaused ? "Paused" : "Running"))
               .font(.caption2)
               .foregroundStyle(.secondary)
           }
@@ -23,7 +26,7 @@ struct TenKHoursLiveActivity: Widget {
           .frame(maxHeight: .infinity, alignment: .leading)
         }
         DynamicIslandExpandedRegion(.trailing) {
-          timerLabel(state: context.state)
+          timerLabel(state: context.state, finished: finished)
             .monospacedDigit()
             .font(.system(size: 38, weight: .bold, design: .rounded))
             .foregroundStyle(accent)
@@ -39,13 +42,15 @@ struct TenKHoursLiveActivity: Widget {
           .frame(width: 30)
       } compactTrailing: {
         Group {
-          if context.state.isPaused {
+          if finished {
+            Image(systemName: "checkmark.circle.fill")
+          } else if context.state.isPaused {
             Text(formatCompactSeconds(context.state.pausedAtFreezeSeconds))
           } else if let text = context.state.displayText, !text.isEmpty {
             Text(text)
           } else {
             Text(
-              timerInterval: context.state.effectiveStartedAt...context.state.effectiveStartedAt.addingTimeInterval(86400 * 365),
+              timerInterval: context.state.effectiveStartedAt...timerUpperBound(context.state),
               countsDown: false,
               showsHours: false
             )
@@ -57,7 +62,7 @@ struct TenKHoursLiveActivity: Widget {
         .lineLimit(1)
         .frame(width: 50)
       } minimal: {
-        Image(systemName: context.state.isPaused ? "pause.fill" : "timer")
+        Image(systemName: finished ? "checkmark.circle.fill" : (context.state.isPaused ? "pause.fill" : "timer"))
           .foregroundStyle(accent)
           .frame(maxWidth: .infinity, alignment: .trailing)
       }
@@ -66,15 +71,18 @@ struct TenKHoursLiveActivity: Widget {
 
   @ViewBuilder
   private func timerLabel(
-    state: TenKHoursLiveActivityAttributes.ContentState
+    state: TenKHoursLiveActivityAttributes.ContentState,
+    finished: Bool
   ) -> some View {
-    if state.isPaused {
+    if finished {
+      Text("Finished")
+    } else if state.isPaused {
       Text(formatSeconds(state.pausedAtFreezeSeconds))
     } else if let text = state.displayText, !text.isEmpty {
       Text(text)
     } else {
       Text(
-        timerInterval: state.effectiveStartedAt...state.effectiveStartedAt.addingTimeInterval(86400 * 365),
+        timerInterval: state.effectiveStartedAt...timerUpperBound(state),
         countsDown: false,
         showsHours: true
       )
@@ -88,25 +96,31 @@ struct LockScreenView: View {
 
   var body: some View {
     let accent = colorFromARGB(context.attributes.pursuitColorARGB)
+    let finished = context.isStale || context.state.isFinished
     HStack(spacing: 10) {
       VStack(alignment: .leading, spacing: 2) {
         Text(context.attributes.pursuitName)
           .font(.subheadline.weight(.semibold))
           .lineLimit(1)
-        Text(context.state.isPaused ? "Paused" : "Active session")
+        Text(finished ? "Goal reached" : (context.state.isPaused ? "Paused" : "Active session"))
           .font(.caption2)
           .foregroundStyle(.secondary)
       }
       Spacer(minLength: 8)
       Group {
-        if context.state.isPaused {
+        if finished {
+          HStack(spacing: 6) {
+            Image(systemName: "checkmark.circle.fill")
+            Text("Finished")
+          }
+        } else if context.state.isPaused {
           Text(formatSeconds(context.state.pausedAtFreezeSeconds))
         } else if let text = context.state.displayText, !text.isEmpty {
           Text(text)
             .multilineTextAlignment(.trailing)
         } else {
           Text(
-            timerInterval: context.state.effectiveStartedAt...context.state.effectiveStartedAt.addingTimeInterval(86400 * 365),
+            timerInterval: context.state.effectiveStartedAt...timerUpperBound(context.state),
             countsDown: false,
             showsHours: true
           )
@@ -122,6 +136,15 @@ struct LockScreenView: View {
     .padding(.horizontal, 16)
     .padding(.vertical, 14)
   }
+}
+
+// Upper bound for the auto-ticking timer. When a target is set the timer is
+// bounded to it so Text(timerInterval:) freezes at the goal instead of running
+// past it while the app is backgrounded; otherwise it ticks effectively
+// forever.
+@available(iOS 16.2, *)
+func timerUpperBound(_ state: TenKHoursLiveActivityAttributes.ContentState) -> Date {
+  state.targetEndAt ?? state.effectiveStartedAt.addingTimeInterval(86400 * 365)
 }
 
 func formatSeconds(_ s: Int) -> String {

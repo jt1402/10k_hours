@@ -166,10 +166,7 @@ class _CreatePursuitScreenState extends ConsumerState<CreatePursuitScreen> {
             SizedBox(
               height: 216,
               child: CupertinoTimerPicker(
-                mode: CupertinoTimerPickerMode.hms,
                 initialTimerDuration: _shortDuration,
-                minuteInterval: 1,
-                secondInterval: 1,
                 onTimerDurationChanged: (d) =>
                     setState(() => _shortDuration = d),
               ),

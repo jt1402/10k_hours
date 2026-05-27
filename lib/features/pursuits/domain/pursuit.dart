@@ -10,5 +10,6 @@ abstract class Pursuit with _$Pursuit {
     required int accentColor,
     required int targetMinutes,
     required DateTime createdAt,
+    DateTime? completedAt,
   }) = _Pursuit;
 }

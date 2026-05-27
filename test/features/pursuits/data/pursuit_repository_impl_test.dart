@@ -21,16 +21,16 @@ void main() {
     expect(fetched, isNotNull);
     expect(fetched!.name, 'Guitar');
     expect(fetched.accentColor, 0xFF14B8A6);
-    expect(fetched.targetHours, 10000);
+    expect(fetched.targetMinutes, 600000);
   });
 
-  test('targetHours can be overridden', () async {
+  test('targetMinutes can be overridden', () async {
     final created = await repo.create(
       name: 'Sprint',
       accentColor: 0xFF000000,
-      targetHours: 500,
+      targetMinutes: 500,
     );
-    expect(created.targetHours, 500);
+    expect(created.targetMinutes, 500);
   });
 
   test('getById returns null for missing pursuit', () async {

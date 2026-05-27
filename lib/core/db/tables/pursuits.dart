@@ -9,4 +9,7 @@ class Pursuits extends Table {
   IntColumn get targetMinutes =>
       integer().withDefault(const Constant(600000))();
   DateTimeColumn get createdAt => dateTime()();
+  // When the cumulative covered duration first reached targetMinutes. Used to
+  // gate the one-time celebration sheet and the "Completed" timer-screen UI.
+  DateTimeColumn get completedAt => dateTime().nullable()();
 }

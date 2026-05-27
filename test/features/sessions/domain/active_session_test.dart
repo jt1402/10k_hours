@@ -70,4 +70,95 @@ void main() {
       expect(paused.isPaused, isTrue);
     });
   });
+
+  group('ActiveSession.completionEndAt', () {
+    final t0 = DateTime.utc(2026, 1, 1, 12);
+    const oneMin = Duration(minutes: 1);
+
+    test('backgrounded overshoot clamps to the crossing, not now', () {
+      // The reported bug: 1-minute goal, app reopened at 4m35s. Only the
+      // first minute should be banked.
+      final s = ActiveSession(pursuitId: 1, startedAt: t0);
+      final now = t0.add(const Duration(minutes: 4, seconds: 35));
+      final endAt = s.completionEndAt(
+        priorCounted: Duration.zero,
+        target: oneMin,
+        now: now,
+      );
+      expect(endAt, t0.add(oneMin));
+      // The recorded session duration (what stop() banks) is exactly target.
+      expect(s.elapsedAt(endAt!), oneMin);
+    });
+
+    test('accounts for counted time from prior sessions', () {
+      // 10-min goal, 7 already banked → this session only owes 3 more.
+      final s = ActiveSession(pursuitId: 1, startedAt: t0);
+      final now = t0.add(const Duration(minutes: 30));
+      final endAt = s.completionEndAt(
+        priorCounted: const Duration(minutes: 7),
+        target: const Duration(minutes: 10),
+        now: now,
+      );
+      expect(s.elapsedAt(endAt!), const Duration(minutes: 3));
+    });
+
+    test('shifts the crossing later by accumulated pause time', () {
+      final s = ActiveSession(
+        pursuitId: 1,
+        startedAt: t0,
+        pausedTotal: const Duration(minutes: 2),
+      );
+      final now = t0.add(const Duration(minutes: 10));
+      final endAt = s.completionEndAt(
+        priorCounted: Duration.zero,
+        target: oneMin,
+        now: now,
+      );
+      // Crossing wall-clock is start + pausedTotal + remaining; banked
+      // duration is still exactly the target.
+      expect(endAt, t0.add(const Duration(minutes: 3)));
+      expect(s.elapsedAt(endAt!), oneMin);
+    });
+
+    test('returns null while paused (caller falls back to now)', () {
+      final s = ActiveSession(
+        pursuitId: 1,
+        startedAt: t0,
+        pauseStartedAt: t0.add(const Duration(seconds: 30)),
+      );
+      expect(
+        s.completionEndAt(
+          priorCounted: Duration.zero,
+          target: oneMin,
+          now: t0.add(const Duration(minutes: 5)),
+        ),
+        isNull,
+      );
+    });
+
+    test('returns null when target already met by prior sessions', () {
+      final s = ActiveSession(pursuitId: 1, startedAt: t0);
+      expect(
+        s.completionEndAt(
+          priorCounted: const Duration(minutes: 2),
+          target: oneMin,
+          now: t0.add(const Duration(minutes: 5)),
+        ),
+        isNull,
+      );
+    });
+
+    test('returns null when the crossing is not yet in the past', () {
+      // Foreground tick detecting just before the boundary — no clamp needed.
+      final s = ActiveSession(pursuitId: 1, startedAt: t0);
+      expect(
+        s.completionEndAt(
+          priorCounted: Duration.zero,
+          target: oneMin,
+          now: t0.add(const Duration(seconds: 59)),
+        ),
+        isNull,
+      );
+    });
+  });
 }

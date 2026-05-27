@@ -8,6 +8,7 @@ class RingWidget extends StatelessWidget {
     required this.elapsed,
     required this.targetMinutes,
     required this.accent,
+    this.completed = false,
     this.size = 280,
     super.key,
   });
@@ -15,6 +16,7 @@ class RingWidget extends StatelessWidget {
   final Duration elapsed;
   final int targetMinutes;
   final Color accent;
+  final bool completed;
   final double size;
 
   Duration get _target => Duration(minutes: targetMinutes);
@@ -62,7 +64,8 @@ class RingWidget extends StatelessWidget {
     final ringFontSize = remainingHours >= 1000 ? 72.0 : 88.0;
     return Semantics(
       label:
-          '${_remaining.inMinutes} minutes remaining of $targetMinutes minute target',
+          '${_remaining.inMinutes} minutes remaining '
+          'of $targetMinutes minute target',
       child: SizedBox(
         width: size,
         height: size,
@@ -77,20 +80,40 @@ class RingWidget extends StatelessWidget {
                 backdrop: scheme.surfaceContainerHighest,
               ),
             ),
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  _formatRemaining(),
-                  style: ringNumberStyle(scheme, size: ringFontSize),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  _remainingLabel(),
-                  style: theme.textTheme.bodySmall,
-                ),
-              ],
-            ),
+            if (completed)
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.check_circle_rounded,
+                    size: 96,
+                    color: accent,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Completed',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: accent,
+                    ),
+                  ),
+                ],
+              )
+            else
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    _formatRemaining(),
+                    style: ringNumberStyle(scheme, size: ringFontSize),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _remainingLabel(),
+                    style: theme.textTheme.bodySmall,
+                  ),
+                ],
+              ),
           ],
         ),
       ),

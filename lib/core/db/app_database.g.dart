@@ -69,6 +69,17 @@ class $PursuitsTable extends Pursuits
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _completedAtMeta = const VerificationMeta(
+    'completedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> completedAt = GeneratedColumn<DateTime>(
+    'completed_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -76,6 +87,7 @@ class $PursuitsTable extends Pursuits
     accentColor,
     targetMinutes,
     createdAt,
+    completedAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -128,6 +140,15 @@ class $PursuitsTable extends Pursuits
     } else if (isInserting) {
       context.missing(_createdAtMeta);
     }
+    if (data.containsKey('completed_at')) {
+      context.handle(
+        _completedAtMeta,
+        completedAt.isAcceptableOrUnknown(
+          data['completed_at']!,
+          _completedAtMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -157,6 +178,10 @@ class $PursuitsTable extends Pursuits
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
       )!,
+      completedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}completed_at'],
+      ),
     );
   }
 
@@ -172,12 +197,14 @@ class PursuitRow extends DataClass implements Insertable<PursuitRow> {
   final int accentColor;
   final int targetMinutes;
   final DateTime createdAt;
+  final DateTime? completedAt;
   const PursuitRow({
     required this.id,
     required this.name,
     required this.accentColor,
     required this.targetMinutes,
     required this.createdAt,
+    this.completedAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -187,6 +214,9 @@ class PursuitRow extends DataClass implements Insertable<PursuitRow> {
     map['accent_color'] = Variable<int>(accentColor);
     map['target_minutes'] = Variable<int>(targetMinutes);
     map['created_at'] = Variable<DateTime>(createdAt);
+    if (!nullToAbsent || completedAt != null) {
+      map['completed_at'] = Variable<DateTime>(completedAt);
+    }
     return map;
   }
 
@@ -197,6 +227,9 @@ class PursuitRow extends DataClass implements Insertable<PursuitRow> {
       accentColor: Value(accentColor),
       targetMinutes: Value(targetMinutes),
       createdAt: Value(createdAt),
+      completedAt: completedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(completedAt),
     );
   }
 
@@ -211,6 +244,7 @@ class PursuitRow extends DataClass implements Insertable<PursuitRow> {
       accentColor: serializer.fromJson<int>(json['accentColor']),
       targetMinutes: serializer.fromJson<int>(json['targetMinutes']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      completedAt: serializer.fromJson<DateTime?>(json['completedAt']),
     );
   }
   @override
@@ -222,6 +256,7 @@ class PursuitRow extends DataClass implements Insertable<PursuitRow> {
       'accentColor': serializer.toJson<int>(accentColor),
       'targetMinutes': serializer.toJson<int>(targetMinutes),
       'createdAt': serializer.toJson<DateTime>(createdAt),
+      'completedAt': serializer.toJson<DateTime?>(completedAt),
     };
   }
 
@@ -231,12 +266,14 @@ class PursuitRow extends DataClass implements Insertable<PursuitRow> {
     int? accentColor,
     int? targetMinutes,
     DateTime? createdAt,
+    Value<DateTime?> completedAt = const Value.absent(),
   }) => PursuitRow(
     id: id ?? this.id,
     name: name ?? this.name,
     accentColor: accentColor ?? this.accentColor,
     targetMinutes: targetMinutes ?? this.targetMinutes,
     createdAt: createdAt ?? this.createdAt,
+    completedAt: completedAt.present ? completedAt.value : this.completedAt,
   );
   PursuitRow copyWithCompanion(PursuitsCompanion data) {
     return PursuitRow(
@@ -249,6 +286,9 @@ class PursuitRow extends DataClass implements Insertable<PursuitRow> {
           ? data.targetMinutes.value
           : this.targetMinutes,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      completedAt: data.completedAt.present
+          ? data.completedAt.value
+          : this.completedAt,
     );
   }
 
@@ -259,14 +299,15 @@ class PursuitRow extends DataClass implements Insertable<PursuitRow> {
           ..write('name: $name, ')
           ..write('accentColor: $accentColor, ')
           ..write('targetMinutes: $targetMinutes, ')
-          ..write('createdAt: $createdAt')
+          ..write('createdAt: $createdAt, ')
+          ..write('completedAt: $completedAt')
           ..write(')'))
         .toString();
   }
 
   @override
   int get hashCode =>
-      Object.hash(id, name, accentColor, targetMinutes, createdAt);
+      Object.hash(id, name, accentColor, targetMinutes, createdAt, completedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -275,7 +316,8 @@ class PursuitRow extends DataClass implements Insertable<PursuitRow> {
           other.name == this.name &&
           other.accentColor == this.accentColor &&
           other.targetMinutes == this.targetMinutes &&
-          other.createdAt == this.createdAt);
+          other.createdAt == this.createdAt &&
+          other.completedAt == this.completedAt);
 }
 
 class PursuitsCompanion extends UpdateCompanion<PursuitRow> {
@@ -284,12 +326,14 @@ class PursuitsCompanion extends UpdateCompanion<PursuitRow> {
   final Value<int> accentColor;
   final Value<int> targetMinutes;
   final Value<DateTime> createdAt;
+  final Value<DateTime?> completedAt;
   const PursuitsCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
     this.accentColor = const Value.absent(),
     this.targetMinutes = const Value.absent(),
     this.createdAt = const Value.absent(),
+    this.completedAt = const Value.absent(),
   });
   PursuitsCompanion.insert({
     this.id = const Value.absent(),
@@ -297,6 +341,7 @@ class PursuitsCompanion extends UpdateCompanion<PursuitRow> {
     required int accentColor,
     this.targetMinutes = const Value.absent(),
     required DateTime createdAt,
+    this.completedAt = const Value.absent(),
   }) : name = Value(name),
        accentColor = Value(accentColor),
        createdAt = Value(createdAt);
@@ -306,6 +351,7 @@ class PursuitsCompanion extends UpdateCompanion<PursuitRow> {
     Expression<int>? accentColor,
     Expression<int>? targetMinutes,
     Expression<DateTime>? createdAt,
+    Expression<DateTime>? completedAt,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -313,6 +359,7 @@ class PursuitsCompanion extends UpdateCompanion<PursuitRow> {
       if (accentColor != null) 'accent_color': accentColor,
       if (targetMinutes != null) 'target_minutes': targetMinutes,
       if (createdAt != null) 'created_at': createdAt,
+      if (completedAt != null) 'completed_at': completedAt,
     });
   }
 
@@ -322,6 +369,7 @@ class PursuitsCompanion extends UpdateCompanion<PursuitRow> {
     Value<int>? accentColor,
     Value<int>? targetMinutes,
     Value<DateTime>? createdAt,
+    Value<DateTime?>? completedAt,
   }) {
     return PursuitsCompanion(
       id: id ?? this.id,
@@ -329,6 +377,7 @@ class PursuitsCompanion extends UpdateCompanion<PursuitRow> {
       accentColor: accentColor ?? this.accentColor,
       targetMinutes: targetMinutes ?? this.targetMinutes,
       createdAt: createdAt ?? this.createdAt,
+      completedAt: completedAt ?? this.completedAt,
     );
   }
 
@@ -350,6 +399,9 @@ class PursuitsCompanion extends UpdateCompanion<PursuitRow> {
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
+    if (completedAt.present) {
+      map['completed_at'] = Variable<DateTime>(completedAt.value);
+    }
     return map;
   }
 
@@ -360,7 +412,8 @@ class PursuitsCompanion extends UpdateCompanion<PursuitRow> {
           ..write('name: $name, ')
           ..write('accentColor: $accentColor, ')
           ..write('targetMinutes: $targetMinutes, ')
-          ..write('createdAt: $createdAt')
+          ..write('createdAt: $createdAt, ')
+          ..write('completedAt: $completedAt')
           ..write(')'))
         .toString();
   }
@@ -1131,6 +1184,7 @@ typedef $$PursuitsTableCreateCompanionBuilder =
       required int accentColor,
       Value<int> targetMinutes,
       required DateTime createdAt,
+      Value<DateTime?> completedAt,
     });
 typedef $$PursuitsTableUpdateCompanionBuilder =
     PursuitsCompanion Function({
@@ -1139,6 +1193,7 @@ typedef $$PursuitsTableUpdateCompanionBuilder =
       Value<int> accentColor,
       Value<int> targetMinutes,
       Value<DateTime> createdAt,
+      Value<DateTime?> completedAt,
     });
 
 final class $$PursuitsTableReferences
@@ -1213,6 +1268,11 @@ class $$PursuitsTableFilterComposer
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get completedAt => $composableBuilder(
+    column: $table.completedAt,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1300,6 +1360,11 @@ class $$PursuitsTableOrderingComposer
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<DateTime> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$PursuitsTableAnnotationComposer
@@ -1329,6 +1394,11 @@ class $$PursuitsTableAnnotationComposer
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => column,
+  );
 
   Expression<T> sessionsRefs<T extends Object>(
     Expression<T> Function($$SessionsTableAnnotationComposer a) f,
@@ -1414,12 +1484,14 @@ class $$PursuitsTableTableManager
                 Value<int> accentColor = const Value.absent(),
                 Value<int> targetMinutes = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime?> completedAt = const Value.absent(),
               }) => PursuitsCompanion(
                 id: id,
                 name: name,
                 accentColor: accentColor,
                 targetMinutes: targetMinutes,
                 createdAt: createdAt,
+                completedAt: completedAt,
               ),
           createCompanionCallback:
               ({
@@ -1428,12 +1500,14 @@ class $$PursuitsTableTableManager
                 required int accentColor,
                 Value<int> targetMinutes = const Value.absent(),
                 required DateTime createdAt,
+                Value<DateTime?> completedAt = const Value.absent(),
               }) => PursuitsCompanion.insert(
                 id: id,
                 name: name,
                 accentColor: accentColor,
                 targetMinutes: targetMinutes,
                 createdAt: createdAt,
+                completedAt: completedAt,
               ),
           withReferenceMapper: (p0) => p0
               .map(

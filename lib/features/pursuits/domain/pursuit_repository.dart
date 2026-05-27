@@ -12,4 +12,6 @@ abstract class PursuitRepository {
   Stream<List<Pursuit>> watchAll();
 
   Future<void> delete(int id);
+
+  Future<void> markCompleted(int id, DateTime at);
 }

@@ -50,11 +50,19 @@ class DriftPursuitRepository implements PursuitRepository {
     )..where((t) => t.id.equals(id))).go();
   }
 
+  @override
+  Future<void> markCompleted(int id, DateTime at) async {
+    await (_db.update(_db.pursuits)..where((t) => t.id.equals(id))).write(
+      PursuitsCompanion(completedAt: Value(at.toUtc())),
+    );
+  }
+
   Pursuit _toDomain(PursuitRow row) => Pursuit(
     id: row.id,
     name: row.name,
     accentColor: row.accentColor,
     targetMinutes: row.targetMinutes,
     createdAt: row.createdAt.toUtc(),
+    completedAt: row.completedAt?.toUtc(),
   );
 }
